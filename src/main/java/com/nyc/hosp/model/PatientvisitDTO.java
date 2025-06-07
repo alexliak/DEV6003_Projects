@@ -8,8 +8,8 @@ public class PatientvisitDTO {
     private Integer visitid;
     private LocalDate vistidate;
     private String diagnosis;
-    private Integer patient;
-    private Integer doctor;
+    private Long patient;
+    private Long doctor;
 
     public Integer getVisitid() {
         return visitid;
@@ -35,19 +35,19 @@ public class PatientvisitDTO {
         this.diagnosis = diagnosis;
     }
 
-    public Integer getPatient() {
+    public Long getPatient() {
         return patient;
     }
 
-    public void setPatient(final Integer patient) {
+    public void setPatient(final Long patient) {
         this.patient = patient;
     }
 
-    public Integer getDoctor() {
+    public Long getDoctor() {
         return doctor;
     }
 
-    public void setDoctor(final Integer doctor) {
+    public void setDoctor(final Long doctor) {
         this.doctor = doctor;
     }
 

@@ -2,11 +2,15 @@ package com.nyc.hosp.service;
 
 import com.nyc.hosp.domain.Hospuser;
 import com.nyc.hosp.domain.Patientvisit;
+import com.nyc.hosp.encryption.DiagnosisEncryptionService;
 import com.nyc.hosp.model.PatientvisitDTO;
 import com.nyc.hosp.repos.HospuserRepository;
 import com.nyc.hosp.repos.PatientvisitRepository;
 import com.nyc.hosp.util.NotFoundException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +18,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PatientvisitService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PatientvisitService.class);
+    
     private final PatientvisitRepository patientvisitRepository;
     private final HospuserRepository hospuserRepository;
+    
+    @Autowired
+    private DiagnosisEncryptionService encryptionService;
 
     public PatientvisitService(final PatientvisitRepository patientvisitRepository,
             final HospuserRepository hospuserRepository) {
@@ -39,6 +48,19 @@ public class PatientvisitService {
     public Integer create(final PatientvisitDTO patientvisitDTO) {
         final Patientvisit patientvisit = new Patientvisit();
         mapToEntity(patientvisitDTO, patientvisit);
+        
+        // Encrypt diagnosis before saving
+        if (patientvisit.getDiagnosis() != null && !patientvisit.getDiagnosis().isEmpty()) {
+            try {
+                String encrypted = encryptionService.encrypt(patientvisit.getDiagnosis());
+                patientvisit.setEncryptedDiagnosis(encrypted);
+                patientvisit.setDiagnosis(null); // Clear plain text
+            } catch (Exception e) {
+                logger.error("Failed to encrypt diagnosis", e);
+                throw new RuntimeException("Failed to process diagnosis");
+            }
+        }
+        
         return patientvisitRepository.save(patientvisit).getVisitid();
     }
 
@@ -46,6 +68,19 @@ public class PatientvisitService {
         final Patientvisit patientvisit = patientvisitRepository.findById(visitid)
                 .orElseThrow(NotFoundException::new);
         mapToEntity(patientvisitDTO, patientvisit);
+        
+        // Encrypt diagnosis before saving
+        if (patientvisit.getDiagnosis() != null && !patientvisit.getDiagnosis().isEmpty()) {
+            try {
+                String encrypted = encryptionService.encrypt(patientvisit.getDiagnosis());
+                patientvisit.setEncryptedDiagnosis(encrypted);
+                patientvisit.setDiagnosis(null); // Clear plain text
+            } catch (Exception e) {
+                logger.error("Failed to encrypt diagnosis", e);
+                throw new RuntimeException("Failed to process diagnosis");
+            }
+        }
+        
         patientvisitRepository.save(patientvisit);
     }
 
@@ -57,9 +92,22 @@ public class PatientvisitService {
             final PatientvisitDTO patientvisitDTO) {
         patientvisitDTO.setVisitid(patientvisit.getVisitid());
         patientvisitDTO.setVistidate(patientvisit.getVisitdate());
-        patientvisitDTO.setDiagnosis(patientvisit.getDiagnosis());
-        patientvisitDTO.setPatient(patientvisit.getPatient() == null ? null : patientvisit.getPatient().getUserId());
-        patientvisitDTO.setDoctor(patientvisit.getDoctor() == null ? null : patientvisit.getDoctor().getUserId());
+        
+        // Decrypt diagnosis for display
+        if (patientvisit.getEncryptedDiagnosis() != null && !patientvisit.getEncryptedDiagnosis().isEmpty()) {
+            try {
+                String decrypted = encryptionService.decrypt(patientvisit.getEncryptedDiagnosis());
+                patientvisitDTO.setDiagnosis(decrypted);
+            } catch (Exception e) {
+                logger.error("Failed to decrypt diagnosis for visit {}", patientvisit.getVisitid(), e);
+                patientvisitDTO.setDiagnosis("[Decryption Error]");
+            }
+        } else {
+            patientvisitDTO.setDiagnosis(patientvisit.getDiagnosis());
+        }
+        
+        patientvisitDTO.setPatient(patientvisit.getPatient() == null ? null : patientvisit.getPatient().getId());
+        patientvisitDTO.setDoctor(patientvisit.getDoctor() == null ? null : patientvisit.getDoctor().getId());
         return patientvisitDTO;
     }
 

@@ -1,38 +1,57 @@
 package com.nyc.hosp.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Role")
+@Table(name = "roles")
 public class Role {
+    
+    public enum RoleName {
+        ROLE_ADMIN,
+        ROLE_DOCTOR,
+        ROLE_SECRETARIAT,
+        ROLE_PATIENT
+    }
 
     @Id
-    @Column(nullable = false, updatable = false)
-    private Integer roleId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, unique = true, nullable = false)
+    private RoleName name;
+    
     @Column(length = 100)
-    private String rolename;
+    private String description;
 
-    public Integer getRoleId() {
-        return roleId;
+    public Role() {
     }
 
-    public void setRoleId(final Integer roleId) {
-        this.roleId = roleId;
+    public Role(RoleName name) {
+        this.name = name;
     }
 
-    public String getRolename() {
-        return rolename;
+    public Long getId() {
+        return id;
     }
 
-    public void setRolename(final String rolename) {
-        this.rolename = rolename;
+    public void setId(Long id) {
+        this.id = id;
     }
 
+    public RoleName getName() {
+        return name;
+    }
+
+    public void setName(RoleName name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

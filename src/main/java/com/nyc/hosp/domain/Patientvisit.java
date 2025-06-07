@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 import java.time.LocalDate;
 
 
@@ -22,8 +23,11 @@ public class Patientvisit {
     @Column
     private LocalDate visitdate;
 
-    @Column(columnDefinition = "longtext")
-    private String diagnosis;
+    @Column(columnDefinition = "TEXT")
+    private String encryptedDiagnosis;
+    
+    @Transient
+    private String diagnosis; // Plain text diagnosis, not persisted
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id")
@@ -49,6 +53,14 @@ public class Patientvisit {
         this.visitdate = vistidate;
     }
 
+    public String getEncryptedDiagnosis() {
+        return encryptedDiagnosis;
+    }
+
+    public void setEncryptedDiagnosis(String encryptedDiagnosis) {
+        this.encryptedDiagnosis = encryptedDiagnosis;
+    }
+    
     public String getDiagnosis() {
         return diagnosis;
     }

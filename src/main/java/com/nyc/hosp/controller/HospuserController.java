@@ -37,9 +37,9 @@ public class HospuserController {
 
     @ModelAttribute
     public void prepareContext(final Model model) {
-        model.addAttribute("roleValues", roleRepository.findAll(Sort.by("roleId"))
+        model.addAttribute("roleValues", roleRepository.findAll(Sort.by("id"))
                 .stream()
-                .collect(CustomCollectors.toSortedMap(Role::getRoleId, Role::getRolename)));
+                .collect(CustomCollectors.toSortedMap(Role::getId, role -> role.getName().name())));
     }
 
     @GetMapping
@@ -68,13 +68,13 @@ public class HospuserController {
     }
 
     @GetMapping("/edit/{userId}")
-    public String edit(@PathVariable(name = "userId") final Integer userId, final Model model) {
+    public String edit(@PathVariable(name = "userId") final Long userId, final Model model) {
         model.addAttribute("hospuser", hospuserService.get(userId));
         return "hospuser/edit";
     }
 
     @PostMapping("/edit/{userId}")
-    public String edit(@PathVariable(name = "userId") final Integer userId,
+    public String edit(@PathVariable(name = "userId") final Long userId,
             @ModelAttribute("hospuser") @Valid final HospuserDTO hospuserDTO,
             final BindingResult bindingResult, final RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -86,7 +86,7 @@ public class HospuserController {
     }
 
     @PostMapping("/delete/{userId}")
-    public String delete(@PathVariable(name = "userId") final Integer userId,
+    public String delete(@PathVariable(name = "userId") final Long userId,
             final RedirectAttributes redirectAttributes) {
         final ReferencedWarning referencedWarning = hospuserService.getReferencedWarning(userId);
         if (referencedWarning != null) {

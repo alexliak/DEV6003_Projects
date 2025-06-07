@@ -34,12 +34,12 @@ public class PatientvisitController {
 
     @ModelAttribute
     public void prepareContext(final Model model) {
-        model.addAttribute("patientValues", hospuserRepository.findByRole_RoleId(3)
+        model.addAttribute("patientValues", hospuserRepository.findByRoleName(com.nyc.hosp.domain.Role.RoleName.ROLE_PATIENT)
                 .stream()
-                .collect(CustomCollectors.toSortedMap(Hospuser::getUserId, Hospuser::getUsername)));
-        model.addAttribute("doctorValues", hospuserRepository.findByRole_RoleId(2)
+                .collect(CustomCollectors.toSortedMap(Hospuser::getId, Hospuser::getUsername)));
+        model.addAttribute("doctorValues", hospuserRepository.findByRoleName(com.nyc.hosp.domain.Role.RoleName.ROLE_DOCTOR)
                 .stream()
-                .collect(CustomCollectors.toSortedMap(Hospuser::getUserId, Hospuser::getUsername)));
+                .collect(CustomCollectors.toSortedMap(Hospuser::getId, Hospuser::getUsername)));
     }
 
     @GetMapping

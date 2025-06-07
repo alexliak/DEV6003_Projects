@@ -10,6 +10,8 @@ import com.nyc.hosp.repos.RoleRepository;
 import com.nyc.hosp.util.NotFoundException;
 import com.nyc.hosp.util.ReferencedWarning;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -30,60 +32,79 @@ public class HospuserService {
     }
 
     public List<HospuserDTO> findAll() {
-        final List<Hospuser> hospusers = hospuserRepository.findAll(Sort.by("userId"));
+        final List<Hospuser> hospusers = hospuserRepository.findAll(Sort.by("id"));
         return hospusers.stream()
                 .map(hospuser -> mapToDTO(hospuser, new HospuserDTO()))
                 .toList();
     }
 
-    public HospuserDTO get(final Integer userId) {
+    public HospuserDTO get(final Long userId) {
         return hospuserRepository.findById(userId)
                 .map(hospuser -> mapToDTO(hospuser, new HospuserDTO()))
                 .orElseThrow(NotFoundException::new);
     }
 
-    public Integer create(final HospuserDTO hospuserDTO) {
+    public Long create(final HospuserDTO hospuserDTO) {
         final Hospuser hospuser = new Hospuser();
         mapToEntity(hospuserDTO, hospuser);
-        return hospuserRepository.save(hospuser).getUserId();
+        return hospuserRepository.save(hospuser).getId();
     }
 
-    public void update(final Integer userId, final HospuserDTO hospuserDTO) {
+    public void update(final Long userId, final HospuserDTO hospuserDTO) {
         final Hospuser hospuser = hospuserRepository.findById(userId)
                 .orElseThrow(NotFoundException::new);
         mapToEntity(hospuserDTO, hospuser);
         hospuserRepository.save(hospuser);
     }
 
-    public void delete(final Integer userId) {
+    public void delete(final Long userId) {
         hospuserRepository.deleteById(userId);
     }
 
     private HospuserDTO mapToDTO(final Hospuser hospuser, final HospuserDTO hospuserDTO) {
-        hospuserDTO.setUserId(hospuser.getUserId());
+        hospuserDTO.setUserId(hospuser.getId());
         hospuserDTO.setUsername(hospuser.getUsername());
-        hospuserDTO.setUserpassword(hospuser.getUserpassword());
+        hospuserDTO.setUserpassword(hospuser.getPassword());
         hospuserDTO.setLastlogondatetime(hospuser.getLastlogondatetime());
-hospuserDTO.setLastchangepassword(hospuser.getLastchangepassword());
+        hospuserDTO.setLastchangepassword(hospuser.getLastPasswordChange() != null ? 
+            hospuser.getLastPasswordChange().toInstant().atOffset(java.time.ZoneOffset.UTC) : null);
         hospuserDTO.setEmail(hospuser.getEmail());
-        hospuserDTO.setRole(hospuser.getRole() == null ? null : hospuser.getRole().getRoleId());
+        hospuserDTO.setLocked(hospuser.isAccountLocked());
+        
+        // Handle multiple roles
+        if (hospuser.getRoles() != null && !hospuser.getRoles().isEmpty()) {
+            // For backward compatibility, get the first role
+            Role firstRole = hospuser.getRoles().iterator().next();
+            hospuserDTO.setRole(firstRole.getId().intValue());
+        }
+        
         return hospuserDTO;
     }
 
     private Hospuser mapToEntity(final HospuserDTO hospuserDTO, final Hospuser hospuser) {
         hospuser.setUsername(hospuserDTO.getUsername());
-        hospuser.setUserpassword(hospuserDTO.getUserpassword());
+        hospuser.setPassword(hospuserDTO.getUserpassword());
         hospuser.setLastlogondatetime(hospuserDTO.getLastlogondatetime());
         hospuser.setEmail(hospuserDTO.getEmail());
-        hospuser.setLocked(hospuserDTO.isLocked());
-        hospuser.setLastchangepassword(hospuserDTO.getLastchangepassword());
-        final Role role = hospuserDTO.getRole() == null ? null : roleRepository.findById(hospuserDTO.getRole())
-                .orElseThrow(() -> new NotFoundException("role not found"));
-        hospuser.setRole(role);
+        hospuser.setAccountLocked(hospuserDTO.isLocked());
+        
+        if (hospuserDTO.getLastchangepassword() != null) {
+            hospuser.setLastPasswordChange(java.util.Date.from(
+                hospuserDTO.getLastchangepassword().toInstant()));
+        }
+        
+        // Handle single role from DTO to set of roles
+        if (hospuserDTO.getRole() != null) {
+            final Role role = roleRepository.findById(hospuserDTO.getRole().longValue())
+                    .orElseThrow(() -> new NotFoundException("role not found"));
+            hospuser.getRoles().clear();
+            hospuser.getRoles().add(role);
+        }
+        
         return hospuser;
     }
 
-    public ReferencedWarning getReferencedWarning(final Integer userId) {
+    public ReferencedWarning getReferencedWarning(final Long userId) {
         final ReferencedWarning referencedWarning = new ReferencedWarning();
         final Hospuser hospuser = hospuserRepository.findById(userId)
                 .orElseThrow(NotFoundException::new);
@@ -101,5 +122,4 @@ hospuserDTO.setLastchangepassword(hospuser.getLastchangepassword());
         }
         return null;
     }
-
 }

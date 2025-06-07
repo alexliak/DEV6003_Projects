@@ -1,14 +1,10 @@
 package com.nyc.hosp.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Entity
@@ -17,36 +13,43 @@ public class Hospuser {
     @Id
     @Column(nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userId;
+    private Long id;
 
-    @Column(length = 100)
+    @Column(length = 100, unique = true, nullable = false)
     private String username;
 
-    @Column(length = 100)
-    private String userpassword;
+    @Column(nullable = false)
+    private String password;
 
     @Column
     private OffsetDateTime lastlogondatetime;
 
-    @Column
-    private OffsetDateTime lastchangepassword;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastPasswordChange;
+    
+    @Column(nullable = false)
+    private int failedLoginAttempts = 0;
 
-    @Column(length = 100)
+    @Column(length = 100, unique = true, nullable = false)
     private String email;
 
-    @Column
-    private boolean locked;
+    @Column(nullable = false)
+    private boolean accountLocked = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
-    public Integer getUserId() {
-        return userId;
+    public Long getId() {
+        return id;
     }
 
-    public void setUserId(final Integer userId) {
-        this.userId = userId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -57,12 +60,12 @@ public class Hospuser {
         this.username = username;
     }
 
-    public String getUserpassword() {
-        return userpassword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserpassword(final String userpassword) {
-        this.userpassword = userpassword;
+    public void setPassword(final String password) {
+        this.password = password;
     }
 
     public OffsetDateTime getLastlogondatetime() {
@@ -81,27 +84,35 @@ public class Hospuser {
         this.email = email;
     }
 
-    public Role getRole() {
-        return role;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setRole(final Role role) {
-        this.role = role;
+    public void setRoles(final Set<Role> roles) {
+        this.roles = roles;
     }
 
-    public boolean isLocked() {
-        return locked;
+    public boolean isAccountLocked() {
+        return accountLocked;
     }
 
-    public void setLocked(boolean locked) {
-        this.locked = locked;
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
     }
 
-    public OffsetDateTime getLastchangepassword() {
-        return lastchangepassword;
+    public Date getLastPasswordChange() {
+        return lastPasswordChange;
     }
 
-    public void setLastchangepassword(OffsetDateTime lastchangepassword) {
-        this.lastchangepassword = lastchangepassword;
+    public void setLastPasswordChange(Date lastPasswordChange) {
+        this.lastPasswordChange = lastPasswordChange;
+    }
+    
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
     }
 }

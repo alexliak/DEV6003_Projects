@@ -49,13 +49,13 @@ public class RoleController {
     }
 
     @GetMapping("/edit/{roleId}")
-    public String edit(@PathVariable(name = "roleId") final Integer roleId, final Model model) {
+    public String edit(@PathVariable(name = "roleId") final Long roleId, final Model model) {
         model.addAttribute("role", roleService.get(roleId));
         return "role/edit";
     }
 
     @PostMapping("/edit/{roleId}")
-    public String edit(@PathVariable(name = "roleId") final Integer roleId,
+    public String edit(@PathVariable(name = "roleId") final Long roleId,
             @ModelAttribute("role") @Valid final RoleDTO roleDTO, final BindingResult bindingResult,
             final RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -67,7 +67,7 @@ public class RoleController {
     }
 
     @PostMapping("/delete/{roleId}")
-    public String delete(@PathVariable(name = "roleId") final Integer roleId,
+    public String delete(@PathVariable(name = "roleId") final Long roleId,
             final RedirectAttributes redirectAttributes) {
         final ReferencedWarning referencedWarning = roleService.getReferencedWarning(roleId);
         if (referencedWarning != null) {
