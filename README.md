@@ -53,17 +53,8 @@ mvn spring-boot:run
 3. **Change Password (REQUIRED)**
    - Go to User Menu → Change Password
    - Follow password requirements shown on screen
-   - Use secure password from NEW_CREDENTIALS.md
-
-4. **Test Security Features**
-   - Navigate to Entities → Security Test
-   - Test all security features:
-     - SQL Injection Prevention
-     - Password Validation
-     - Diagnosis Encryption
-     - Role-Based Access Control
-
-5. **Test Different Roles**
+     - Use secure password from NEW_CREDENTIALS.md
+4. **Test Different Roles**
    - Logout and login with different users
    - Verify role-based permissions
 
@@ -127,22 +118,6 @@ src/main/java/com/nyc/hosp/
 ### Technical Documentation
 - [Complete System Documentation](docs/technical/HOSPITAL_MANAGEMENT_COMPLETE_DOCUMENTATION.md)
 
-## 🧪 Testing
-
-Run the comprehensive security test suite:
-```bash
-chmod +x scripts/security/test_security.sh
-./scripts/security/test_security.sh
-```
-
-### Test Coverage
-- Authentication tests (valid/invalid login, account lockout)
-- Authorization tests (role-based access control)
-- Input validation (SQL injection, XSS prevention)
-- Encryption verification
-- JWT security tests
-- Password complexity validation
-
 ## 📊 API Documentation
 
 ### Authentication
@@ -185,7 +160,6 @@ Content-Type: application/json
 ## 📈 Performance
 
 - Processing time: < 2 seconds per request
-- Memory usage: < 4.5GB under load
 - Supports concurrent users with session management
 - Stateless API for horizontal scaling
 
