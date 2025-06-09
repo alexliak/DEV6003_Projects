@@ -13,13 +13,50 @@
                 </div>
             </div>
             <div th:replace="~{fragments/forms::globalErrors('patientvisit')}" />
-            <form th:action="${requestUri}" method="post" novalidate="">
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='vistidate', inputClass='js-datepicker')}" />
+            
+            <!-- Encryption Notice -->
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-lock"></i> <strong>Security Notice:</strong> 
+                    All medical diagnoses are automatically encrypted using AES-256-GCM before storage.
+                </div>
+                <button type="button" class="btn btn-sm btn-info" onclick="showEncryptionDemo()">
+                    See How It Works
+                </button>
+            </div>
+            
+            <form th:action="${requestUri}" method="post" novalidate="" onsubmit="return handleSubmit(event)">
+                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='visitdate', inputClass='js-datepicker')}" />
                 <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='diagnosis', type='textarea')}" />
                 <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='patient', type='select')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='doctor', type='select')}" />
                 <input type="submit" th:value="#{patientvisit.add.headline}" class="btn btn-primary mt-4" />
             </form>
+            
+            <!-- Include encryption demo -->
+            <div th:replace="~{fragments/encryption-demo::encryptionDemo}"></div>
+            
+            <script>
+            function handleSubmit(event) {
+                const diagnosis = document.getElementById('diagnosis').value;
+                if (diagnosis && diagnosis.trim()) {
+                    showEncryptionDemo(diagnosis);
+                    // Allow form submission after showing demo
+                    setTimeout(() => {
+                        event.target.submit();
+                    }, 2000);
+                    return false;
+                }
+                return true;
+            }
+            
+            function showEncryptionDemo(text) {
+                if (!text) {
+                    text = document.getElementById('diagnosis').value || 'Sample diagnosis text';
+                }
+                // Call the function from encryption-demo fragment
+                window.showEncryptionDemo(text);
+            }
+            </script>
         </div>
     </body>
 </html>

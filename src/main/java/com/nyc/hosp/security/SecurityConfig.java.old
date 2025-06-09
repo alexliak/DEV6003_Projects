@@ -1,0 +1,120 @@
+package com.nyc.hosp.security;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+public class SecurityConfig {
+    
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return authProvider;
+    }
+    
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+    
+    // API Security Configuration (JWT) - Order 1
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/api/**")
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/visits/**").hasAnyRole("ADMIN", "DOCTOR")
+                .requestMatchers("/api/patients/**").hasAnyRole("ADMIN", "DOCTOR", "SECRETARIAT")
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        
+        return http.build();
+    }
+    
+    // Web Security Configuration (Session-based) - Order 2
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
+        http
+            // CSRF Protection for forms
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            
+            // Headers for security
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny()))
+            
+            // Session management
+            .sessionManagement(session -> session
+                .sessionFixation().migrateSession()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(true))
+            
+            // Form login for Thymeleaf
+            .formLogin(form -> form
+                .loginPage("/auth/login")
+                .loginProcessingUrl("/auth/login")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/auth/login?error=true")
+                .permitAll())
+            
+            // Logout
+            .logout(logout -> logout
+                .logoutUrl("/auth/logout")
+                .logoutSuccessUrl("/auth/login?logout=true")
+                .deleteCookies("JSESSIONID")
+                .permitAll())
+            
+            // Authorization rules
+            .authorizeHttpRequests(authz -> authz
+                // Public resources
+                .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                .requestMatchers("/auth/login", "/error").permitAll()
+                
+                // Role-based access for pages
+                .requestMatchers("/roles/**").hasRole("ADMIN")
+                .requestMatchers("/hospusers/**").hasAnyRole("ADMIN", "SECRETARIAT")
+                .requestMatchers("/patientvisits/**").hasAnyRole("ADMIN", "DOCTOR")
+                
+                // All other requests require authentication
+                .anyRequest().authenticated());
+        
+        return http.build();
+    }
+}

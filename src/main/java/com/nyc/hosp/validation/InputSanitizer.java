@@ -11,20 +11,20 @@ public class InputSanitizer {
     
     private static final Logger logger = LoggerFactory.getLogger(InputSanitizer.class);
     
-    // SQL Injection patterns
+    // SQL Injection patterns - MORE STRICT
     private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(
-        "(?i).*(union|select|insert|update|delete|drop|create|alter|exec|execute|script|javascript|alert|onload|onerror|onclick).*"
+        "(?i).*(union|select|insert|update|delete|drop|create|alter|exec|execute|script|javascript|alert|onload|onerror|onclick|--|;|/\\*|\\*/|xp_|sp_|0x|\\|\\||&&).*"
     );
     
-    // XSS patterns
+    // XSS patterns - MORE STRICT
     private static final Pattern XSS_PATTERN = Pattern.compile(
-        ".*(<script|</script|<iframe|</iframe|javascript:|onerror=|onload=|onclick=|<img|<svg).*",
+        ".*(<script|</script|<iframe|</iframe|javascript:|onerror=|onload=|onclick=|<img|<svg|alert\\(|prompt\\(|confirm\\().*",
         Pattern.CASE_INSENSITIVE
     );
     
     // Special characters that might be used for injection
-    private static final Pattern SPECIAL_CHARS_PATTERN = Pattern.compile(
-        ".*[';\"\\-\\-\\/\\*\\*\\/].*"
+    private static final Pattern DANGEROUS_CHARS_PATTERN = Pattern.compile(
+        ".*['\";].*|.*--.*|.*/\\*.*|.*\\*/.*"
     );
     
     public boolean isValid(String input) {
@@ -32,15 +32,21 @@ public class InputSanitizer {
             return true;
         }
         
+        // Check for dangerous characters first
+        if (DANGEROUS_CHARS_PATTERN.matcher(input).matches()) {
+            logger.warn("Dangerous characters detected in input: {}", input);
+            return false;
+        }
+        
         // Check for SQL injection patterns
         if (SQL_INJECTION_PATTERN.matcher(input).matches()) {
-            logger.warn("SQL injection pattern detected in input");
+            logger.warn("SQL injection pattern detected in input: {}", input);
             return false;
         }
         
         // Check for XSS patterns
         if (XSS_PATTERN.matcher(input).matches()) {
-            logger.warn("XSS pattern detected in input");
+            logger.warn("XSS pattern detected in input: {}", input);
             return false;
         }
         

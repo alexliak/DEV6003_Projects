@@ -4,6 +4,12 @@
     <head>
         <title>[[#{hospuser.list.headline}]]</title>
     </head>
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+    <head>
+        <title>[[#{hospuser.list.headline}]]</title>
+    </head>
     <body>
         <div layout:fragment="content">
             <div class="d-flex flex-wrap mb-4">
@@ -21,6 +27,7 @@
                             <th scope="col">[[#{hospuser.username.label}]]</th>
                             <th scope="col">[[#{hospuser.userpassword.label}]]</th>
                             <th scope="col">[[#{hospuser.lastlogondatetime.label}]]</th>
+                            <th scope="col">Last Password Change</th>
                             <th scope="col">[[#{hospuser.email.label}]]</th>
                             <th scope="col">[[#{hospuser.role.label}]]</th>
                             <th><!-- --></th>
@@ -32,6 +39,7 @@
                             <td>[[${hospuser.username}]]</td>
                             <td>[[${hospuser.userpassword}]]</td>
                             <td>[[${hospuser.lastlogondatetime}]]</td>
+                            <td>[[${hospuser.lastchangepassword}]]</td>
                             <td>[[${hospuser.email}]]</td>
                             <td>[[${hospuser.role}]]</td>
                             <td>
@@ -49,4 +57,5 @@
             </div>
         </div>
     </body>
+</html>
 </html>

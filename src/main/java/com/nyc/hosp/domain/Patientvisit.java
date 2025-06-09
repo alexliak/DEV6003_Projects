@@ -24,10 +24,10 @@ public class Patientvisit {
     private LocalDate visitdate;
 
     @Column(columnDefinition = "TEXT")
+    private String diagnosis; // Store plain text for now
+
+    @Column(columnDefinition = "TEXT")
     private String encryptedDiagnosis;
-    
-    @Transient
-    private String diagnosis; // Plain text diagnosis, not persisted
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id")

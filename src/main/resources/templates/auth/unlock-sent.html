@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Unlock Email Sent</title>
+    <meta charset="utf-8" />
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet" />
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h1 class="text-success">✉️</h1>
+                        <h3>Unlock Link Sent!</h3>
+                        
+                        <div class="alert alert-info mt-3">
+                            <strong>Demo Mode:</strong> In production, this would be sent via email.
+                        </div>
+                        
+                        <div class="alert alert-success" th:if="${MSG_SUCCESS}">
+                            <p class="mb-0" th:text="${MSG_SUCCESS}"></p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p>For demo purposes, here's your unlock token:</p>
+                            <code class="fs-6" th:text="${unlockToken}"></code>
+                        </div>
+                        
+                        <hr>
+                        
+                        <a href="/auth/login" class="btn btn-primary">Back to Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

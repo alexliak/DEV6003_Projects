@@ -9,31 +9,59 @@ import com.nyc.hosp.repos.PatientvisitRepository;
 import com.nyc.hosp.repos.RoleRepository;
 import com.nyc.hosp.util.NotFoundException;
 import com.nyc.hosp.util.ReferencedWarning;
+import com.nyc.hosp.service.EmailService;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class HospuserService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(HospuserService.class);
 
     private final HospuserRepository hospuserRepository;
     private final RoleRepository roleRepository;
     private final PatientvisitRepository patientvisitRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public HospuserService(final HospuserRepository hospuserRepository,
             final RoleRepository roleRepository,
-            final PatientvisitRepository patientvisitRepository) {
+            final PatientvisitRepository patientvisitRepository,
+            final PasswordEncoder passwordEncoder,
+            final EmailService emailService) {
         this.hospuserRepository = hospuserRepository;
         this.roleRepository = roleRepository;
         this.patientvisitRepository = patientvisitRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     public List<HospuserDTO> findAll() {
         final List<Hospuser> hospusers = hospuserRepository.findAll(Sort.by("id"));
         return hospusers.stream()
+                .map(hospuser -> mapToDTO(hospuser, new HospuserDTO()))
+                .toList();
+    }
+    
+    public List<HospuserDTO> findPatientsAndDoctors() {
+        final List<Hospuser> allUsers = hospuserRepository.findAll(Sort.by("id"));
+        return allUsers.stream()
+                .filter(user -> {
+                    // Filter only users with PATIENT or DOCTOR roles
+                    return user.getRoles().stream().anyMatch(role -> 
+                        role.getName() == Role.RoleName.ROLE_PATIENT || 
+                        role.getName() == Role.RoleName.ROLE_DOCTOR
+                    );
+                })
                 .map(hospuser -> mapToDTO(hospuser, new HospuserDTO()))
                 .toList();
     }
@@ -53,8 +81,52 @@ public class HospuserService {
     public void update(final Long userId, final HospuserDTO hospuserDTO) {
         final Hospuser hospuser = hospuserRepository.findById(userId)
                 .orElseThrow(NotFoundException::new);
+        
+        // Store the current password before mapping
+        String currentPassword = hospuser.getPassword();
+        boolean wasPasswordChanged = false;
+        String temporaryPassword = null;
+        
+        // Check if admin is providing a new password
+        if (hospuserDTO.getUserpassword() != null && !hospuserDTO.getUserpassword().isEmpty() 
+                && !hospuserDTO.getUserpassword().equals("********")) {
+            // Generate a temporary password
+            temporaryPassword = generateTemporaryPassword();
+            hospuserDTO.setUserpassword(temporaryPassword);
+            wasPasswordChanged = true;
+        }
+        
         mapToEntity(hospuserDTO, hospuser);
+        
+        // If no password was provided in the DTO, keep the existing password
+        if (hospuserDTO.getUserpassword() == null || hospuserDTO.getUserpassword().isEmpty() 
+                || hospuserDTO.getUserpassword().equals("********")) {
+            hospuser.setPassword(currentPassword);
+        }
+        
+        // Force password change if admin changed it
+        if (wasPasswordChanged) {
+            hospuser.setForcePasswordChange(true);
+            logger.info("User {} marked for forced password change", hospuser.getUsername());
+        }
+        
         hospuserRepository.save(hospuser);
+        
+        // Send email if password was changed by admin
+        if (wasPasswordChanged && temporaryPassword != null) {
+            emailService.sendTemporaryPasswordEmail(
+                hospuser.getEmail(), 
+                hospuser.getUsername(), 
+                temporaryPassword
+            );
+            logger.info("Temporary password sent to user: {}", hospuser.getUsername());
+        }
+    }
+    
+    private String generateTemporaryPassword() {
+        // Generate a secure temporary password
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        return "Temp@" + uuid;
     }
 
     public void delete(final Long userId) {
@@ -64,12 +136,15 @@ public class HospuserService {
     private HospuserDTO mapToDTO(final Hospuser hospuser, final HospuserDTO hospuserDTO) {
         hospuserDTO.setUserId(hospuser.getId());
         hospuserDTO.setUsername(hospuser.getUsername());
-        hospuserDTO.setUserpassword(hospuser.getPassword());
+        hospuserDTO.setUserpassword(hospuser.getPassword()); // Show the BCrypt hash
         hospuserDTO.setLastlogondatetime(hospuser.getLastlogondatetime());
         hospuserDTO.setLastchangepassword(hospuser.getLastPasswordChange() != null ? 
             hospuser.getLastPasswordChange().toInstant().atOffset(java.time.ZoneOffset.UTC) : null);
         hospuserDTO.setEmail(hospuser.getEmail());
         hospuserDTO.setLocked(hospuser.isAccountLocked());
+        hospuserDTO.setFirstName(hospuser.getFirstName());
+        hospuserDTO.setLastName(hospuser.getLastName());
+        hospuserDTO.setDateOfBirth(hospuser.getDateOfBirth());
         
         // Handle multiple roles
         if (hospuser.getRoles() != null && !hospuser.getRoles().isEmpty()) {
@@ -83,11 +158,30 @@ public class HospuserService {
 
     private Hospuser mapToEntity(final HospuserDTO hospuserDTO, final Hospuser hospuser) {
         hospuser.setUsername(hospuserDTO.getUsername());
-        hospuser.setPassword(hospuserDTO.getUserpassword());
+        
+        // Hash the password only if it's being changed (not already hashed)
+        String password = hospuserDTO.getUserpassword();
+        if (password != null && !password.isEmpty()) {
+            // Check if password is already hashed (BCrypt format starts with $2a$, $2b$, or $2y$)
+            if (!password.startsWith("$2a$") && !password.startsWith("$2b$") && !password.startsWith("$2y$")) {
+                // Password is plain text, hash it
+                hospuser.setPassword(passwordEncoder.encode(password));
+                // Set password change date when password is set
+                hospuser.setLastPasswordChange(new Date());
+            } else {
+                // Password is already hashed, use as is
+                hospuser.setPassword(password);
+            }
+        }
+        
         hospuser.setLastlogondatetime(hospuserDTO.getLastlogondatetime());
         hospuser.setEmail(hospuserDTO.getEmail());
         hospuser.setAccountLocked(hospuserDTO.isLocked());
+        hospuser.setFirstName(hospuserDTO.getFirstName());
+        hospuser.setLastName(hospuserDTO.getLastName());
+        hospuser.setDateOfBirth(hospuserDTO.getDateOfBirth());
         
+        // Don't override lastPasswordChange if provided in DTO
         if (hospuserDTO.getLastchangepassword() != null) {
             hospuser.setLastPasswordChange(java.util.Date.from(
                 hospuserDTO.getLastchangepassword().toInstant()));

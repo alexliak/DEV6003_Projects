@@ -6,6 +6,14 @@ target/
 application-local.properties
 *.log
 
+## Environment Variables
+.env
+.env.local
+.env.*.local
+
+## Mailtrap Credentials
+**/application-mailtrap.properties
+
 ## IntelliJ IDEA
 .idea
 *.iws

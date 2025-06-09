@@ -1,0 +1,172 @@
+/* Custom CSS for Hospital Management System */
+
+/* Remove all checkbox appearances */
+input[type="checkbox"],
+input[type="radio"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+/* Remove checkbox labels if any */
+label[for*="checkbox"],
+label[for*="radio"] {
+    display: none !important;
+}
+
+/* Ensure dropdowns work properly */
+.dropdown-toggle::after {
+    margin-left: 0.5rem;
+}
+
+/* Better accessibility */
+*:focus {
+    outline: 2px solid var(--primary-color, #667eea);
+    outline-offset: 2px;
+}
+
+/* Button focus styles */
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Skip links for accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #667eea;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .action-box {
+        border: 3px solid #000;
+    }
+    
+    .btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Better keyboard navigation indicators */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Bootstrap dropdown overrides */
+.dropdown-menu {
+    position: absolute !important;
+    inset: 0px auto auto 0px !important;
+    margin: 0px !important;
+    transform: translate(0px, 40px) !important;
+    z-index: 9999 !important;
+}
+
+.dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ensure dropdowns appear above everything */
+.navbar .dropdown {
+    position: relative !important;
+}
+
+.navbar .dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    z-index: 9999 !important;
+}
+
+/* Improved form accessibility */
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Ensure proper text contrast */
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Improve readability */
+body {
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+    .btn,
+    .action-box,
+    .dropdown-item {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Ensure clickable areas are large enough */
+    a, button, input, select, textarea {
+        min-height: 44px;
+    }
+    
+    /* Better spacing for touch */
+    .navbar-nav .nav-link {
+        padding: 12px 16px !important;
+    }
+    
+    /* Prevent horizontal scroll */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Fix container widths */
+    .container {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Touch-friendly form controls */
+    .form-control,
+    .btn {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Better tap targets */
+    .dropdown-item {
+        padding: 12px 20px;
+    }
+    
+    /* Fix modals and overlays */
+    .modal-dialog {
+        margin: 10px;
+    }
+}

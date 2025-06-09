@@ -2,6 +2,7 @@ package com.nyc.hosp.model;
 
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
+import java.util.Date;
 import org.springframework.format.annotation.DateTimeFormat;
 
 
@@ -29,6 +30,15 @@ public class HospuserDTO {
     private String email;
 
     private boolean locked;
+    
+    @Size(max = 100)
+    private String firstName;
+    
+    @Size(max = 100)
+    private String lastName;
+    
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date dateOfBirth;
 
     public boolean isLocked() {
         return locked;
@@ -102,5 +112,29 @@ public class HospuserDTO {
 
     public void setLastchangepassword(OffsetDateTime lastchangepasswordl) {
         this.lastchangepassword = lastchangepasswordl;
+    }
+    
+    public String getFirstName() {
+        return firstName;
+    }
+    
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    
+    public String getLastName() {
+        return lastName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+    
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }

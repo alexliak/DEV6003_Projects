@@ -2,26 +2,151 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layout}">
     <head>
-        <title>[[#{hospuser.edit.headline}]]</title>
+        <meta charset="UTF-8">
+        <title>Edit User</title>
     </head>
     <body>
         <div layout:fragment="content">
             <div class="d-flex flex-wrap mb-4">
-                <h1 class="flex-grow-1">[[#{hospuser.edit.headline}]]</h1>
+                <h1 class="flex-grow-1">Edit User</h1>
                 <div>
-                    <a th:href="@{/hospusers}" class="btn btn-secondary">[[#{hospuser.edit.back}]]</a>
+                    <a th:href="@{/hospusers}" class="btn btn-secondary">Back to list</a>
                 </div>
             </div>
-            <div th:replace="~{fragments/forms::globalErrors('hospuser')}" />
-            <form th:action="${requestUri}" method="post" novalidate="">
-                <div th:replace="~{fragments/forms::inputRow(object='hospuser', field='userId', disabled=true, type='number')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='hospuser', field='username')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='hospuser', field='userpassword')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='hospuser', field='lastlogondatetime')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='hospuser', field='email')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='hospuser', field='role', type='select')}" />
-                <input type="submit" th:value="#{hospuser.edit.headline}" class="btn btn-primary mt-4" />
+            
+            <!-- Error messages -->
+            <div th:if="${MSG_ERROR}" class="alert alert-danger" role="alert">
+                <span th:text="${MSG_ERROR}"></span>
+            </div>
+            
+            <form th:action="@{/hospusers/edit/{id}(id=${hospuser.userId})}" method="post" accept-charset="UTF-8">
+                <!-- User ID (readonly) -->
+                <div class="mb-3">
+                    <label for="userId" class="form-label">User ID</label>
+                    <input type="number" class="form-control" id="userId" name="userId" 
+                           th:value="${hospuser.userId}" readonly disabled>
+                </div>
+                
+                <div class="row">
+                    <!-- Username -->
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               th:value="${hospuser.username}" required>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               th:value="${hospuser.email}" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- First Name -->
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" 
+                               th:value="${hospuser.firstName}" required>
+                    </div>
+                    
+                    <!-- Last Name -->
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" 
+                               th:value="${hospuser.lastName}" required>
+                    </div>
+                </div>
+                
+                <!-- Date of Birth -->
+                <div class="mb-3">
+                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+                           th:value="${hospuser.dateOfBirth}" required>
+                    <div class="mt-2">
+                        <small class="text-muted">Age: <span id="ageDisplay">-</span> years</small>
+                    </div>
+                </div>
+                
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="userpassword" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="userpassword" name="userpassword" 
+                           placeholder="Leave blank to keep current password">
+                    <small class="form-text text-muted">Leave empty to keep the current password</small>
+                </div>
+                
+                <!-- Last Logon -->
+                <div class="mb-3">
+                    <label for="lastlogondatetime" class="form-label">Last Logon</label>
+                    <input type="text" class="form-control" id="lastlogondatetime" name="lastlogondatetime" 
+                           th:value="${hospuser.lastlogondatetime}" readonly>
+                </div>
+                
+                <!-- Role -->
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select class="form-control" id="role" name="role" required>
+                        <option value="">Please select</option>
+                        <option th:each="roleValue : ${roleValues}" 
+                                th:value="${roleValue.key}" 
+                                th:text="${roleValue.value}"
+                                th:selected="${roleValue.key == hospuser.role}">
+                        </option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-4">Update User</button>
             </form>
         </div>
+        
+        <script>
+            // Age calculation
+            const dateOfBirth = document.getElementById('dateOfBirth');
+            const ageDisplay = document.getElementById('ageDisplay');
+            
+            if (dateOfBirth) {
+                // Calculate age on page load if date exists
+                if (dateOfBirth.value) {
+                    calculateAge();
+                }
+                
+                dateOfBirth.addEventListener('change', function() {
+                    calculateAge();
+                });
+                
+                // Set max date to today
+                dateOfBirth.max = new Date().toISOString().split('T')[0];
+            }
+            
+            function calculateAge() {
+                const birthDate = new Date(dateOfBirth.value);
+                const today = new Date();
+                
+                if (!dateOfBirth.value || birthDate > today) {
+                    ageDisplay.textContent = '-';
+                    return;
+                }
+                
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                ageDisplay.textContent = age;
+                
+                // Validate minimum age
+                if (age < 0) {
+                    dateOfBirth.setCustomValidity('Please enter a valid date of birth');
+                } else if (age > 150) {
+                    dateOfBirth.setCustomValidity('Please enter a valid date of birth');
+                } else {
+                    dateOfBirth.setCustomValidity('');
+                }
+            }
+        </script>
     </body>
 </html>

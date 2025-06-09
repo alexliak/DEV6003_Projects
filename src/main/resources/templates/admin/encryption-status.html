@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+<head>
+    <title>Encryption Status Dashboard</title>
+    <style>
+        .encrypted { background-color: #d4edda; }
+        .not-encrypted { background-color: #f8d7da; }
+        .suspicious { background-color: #fff3cd; }
+        .raw-data { 
+            font-family: monospace; 
+            font-size: 0.8em; 
+            word-break: break-all;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h1><i class="fas fa-shield-alt"></i> Encryption Status Dashboard</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Encrypted</h5>
+                        <h2 th:text="${encryptedCount}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Not Encrypted</h5>
+                        <h2 th:text="${notEncryptedCount}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">Suspicious</h5>
+                        <h2 th:text="${suspiciousCount}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h5 class="card-title">Encryption %</h5>
+                        <h2 th:text="${encryptionPercentage + '%'}">0%</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3>Database Raw Content</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Visit ID</th>
+                        <th>Plain Diagnosis Field</th>
+                        <th>Encrypted Diagnosis Field</th>
+                        <th>Status</th>
+                        <th>Decrypted Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="visit : ${visits}" 
+                        th:class="${visit.status == 'ENCRYPTED' ? 'encrypted' : (visit.status == 'NOT_ENCRYPTED' ? 'not-encrypted' : 'suspicious')}">
+                        <td th:text="${visit.visitId}"></td>
+                        <td>
+                            <span th:if="${visit.plainDiagnosis}" class="text-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span th:text="${visit.plainDiagnosis}"></span>
+                            </span>
+                            <span th:unless="${visit.plainDiagnosis}" class="text-muted">NULL</span>
+                        </td>
+                        <td class="raw-data">
+                            <span th:if="${visit.encryptedDiagnosis}" th:text="${visit.encryptedDiagnosis}"></span>
+                            <span th:unless="${visit.encryptedDiagnosis}" class="text-muted">NULL</span>
+                        </td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${visit.status == 'ENCRYPTED' ? 'bg-success' : (visit.status == 'NOT_ENCRYPTED' ? 'bg-danger' : 'bg-warning')}"
+                                  th:text="${visit.status}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${visit.decryptedValue}" th:text="${visit.decryptedValue}"></span>
+                            <span th:unless="${visit.decryptedValue}" class="text-muted">N/A</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <button class="btn btn-primary" onclick="encryptAllPlainText()">
+                <i class="fas fa-lock"></i> Encrypt All Plain Text
+            </button>
+            <button class="btn btn-info" onclick="location.reload()">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+        </div>
+    </div>
+</body>
+</html>

@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -21,21 +20,21 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationEntryPoint.class);
     
     @Override
-    public void commence(HttpServletRequest httpServletRequest,
-                         HttpServletResponse httpServletResponse,
-                         AuthenticationException e) throws IOException, ServletException {
-        logger.error("Responding with unauthorized error. Message - {}", e.getMessage());
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException, ServletException {
         
-        httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        logger.error("Unauthorized error: {}", authException.getMessage());
+        
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         
         Map<String, Object> data = new HashMap<>();
-        data.put("timestamp", System.currentTimeMillis());
         data.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        data.put("message", "Unauthorized - Authentication required");
-        data.put("path", httpServletRequest.getRequestURI());
+        data.put("error", "Unauthorized");
+        data.put("message", authException.getMessage());
+        data.put("path", request.getServletPath());
         
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(httpServletResponse.getOutputStream(), data);
+        mapper.writeValue(response.getOutputStream(), data);
     }
 }

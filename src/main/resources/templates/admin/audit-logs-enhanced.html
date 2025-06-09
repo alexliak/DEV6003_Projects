@@ -1,0 +1,363 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+    <head>
+        <meta charset="UTF-8">
+        <title>Security Audit Logs - Enhanced</title>
+        <style>
+            .audit-table {
+                font-size: 0.85em;
+            }
+            .table-responsive {
+                max-height: 75vh;
+                overflow-y: auto;
+            }
+            .success-true {
+                background-color: rgba(40, 167, 69, 0.05);
+            }
+            .success-false {
+                background-color: rgba(220, 53, 69, 0.05);
+            }
+            .event-AUTHENTICATION {
+                color: #0066cc;
+                font-weight: bold;
+            }
+            .event-DATA_ACCESS {
+                color: #28a745;
+            }
+            .event-SECURITY_VIOLATION {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .event-ADMIN_ACTION {
+                color: #6f42c1;
+                font-weight: bold;
+            }
+            .event-PASSWORD_CHANGE {
+                color: #fd7e14;
+            }
+            .auto-refresh-indicator {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            .new-row {
+                animation: slideIn 0.5s ease-out;
+                background-color: rgba(255, 193, 7, 0.1) !important;
+            }
+            @keyframes slideIn {
+                from { 
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            /* Column widths */
+            .col-timestamp { width: 140px; }
+            .col-userid { width: 60px; }
+            .col-username { width: 100px; }
+            .col-role { width: 80px; }
+            .col-event { width: 120px; }
+            .col-entity { width: 120px; }
+            .col-status { width: 70px; }
+            .col-ip { width: 100px; }
+            
+            /* Sticky header */
+            thead th {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                background-color: #212529 !important;
+            }
+            
+            /* Better readability */
+            .table td {
+                vertical-align: middle;
+                padding: 0.5rem;
+            }
+            
+            /* Legend */
+            .legend {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 10px;
+                font-size: 0.85em;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+            .legend-color {
+                width: 20px;
+                height: 20px;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-shield-alt"></i> Security Audit Logs
+                    <span id="refreshIndicator" class="badge bg-success auto-refresh-indicator" style="font-size: 0.5em;">
+                        <i class="fas fa-sync"></i> LIVE
+                    </span>
+                </h1>
+                <div>
+                    <button class="btn btn-primary btn-sm" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i> Refresh Now
+                    </button>
+                    <label class="ms-3">
+                        <input type="checkbox" id="autoRefresh" checked> Auto-refresh (5s)
+                    </label>
+                </div>
+            </div>
+            
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-info-circle"></i> 
+                    Real-time monitoring of all security events
+                </div>
+                <div>
+                    <small>Last update: <strong id="lastUpdate"></strong></small> | 
+                    <small>Total events: <strong id="totalEvents" th:text="${totalLogs}"></strong></small>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #0066cc;"></div>
+                    <span>Authentication</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #28a745;"></div>
+                    <span>Data Access</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #dc3545;"></div>
+                    <span>Security Violation</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #6f42c1;"></div>
+                    <span>Admin Action</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #fd7e14;"></div>
+                    <span>Password Change</span>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover audit-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="col-timestamp">Timestamp</th>
+                            <th class="col-userid">ID</th>
+                            <th class="col-username">Username</th>
+                            <th class="col-role">Role</th>
+                            <th class="col-event">Event</th>
+                            <th>Description</th>
+                            <th class="col-entity">Entity</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-ip">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditLogsBody">
+                        <tr th:each="log : ${auditLogs}" 
+                            th:class="${log.success ? 'success-true' : 'success-false'}"
+                            th:data-id="${log.id}">
+                            <td>
+                                <small th:text="${log.formattedTimestamp}"></small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary" th:text="${log.userId ?: '-'}"></span>
+                            </td>
+                            <td>
+                                <strong th:text="${log.username}"></strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark" th:text="${log.userRole ?: '-'}"></span>
+                            </td>
+                            <td>
+                                <span th:class="'event-' + ${log.event_type}" th:text="${log.event_type}"></span>
+                            </td>
+                            <td>
+                                <span th:text="${log.event_description}"></span>
+                            </td>
+                            <td>
+                                <span th:if="${log.entity_type}">
+                                    <span th:text="${log.entity_type}"></span>
+                                    <span th:if="${log.entity_id}" class="badge bg-light text-dark" th:text="'#' + ${log.entity_id}"></span>
+                                </span>
+                                <span th:unless="${log.entity_type}">-</span>
+                            </td>
+                            <td>
+                                <span th:if="${log.success}" class="badge bg-success">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                                <span th:unless="${log.success}" class="badge bg-danger">
+                                    <i class="fas fa-times"></i>
+                                </span>
+                            </td>
+                            <td>
+                                <small th:text="${log.ip_address ?: '-'}"></small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <script>
+                let autoRefreshInterval;
+                let lastId = 0;
+                
+                // Get the highest ID from current logs
+                function updateLastId() {
+                    const rows = document.querySelectorAll('#auditLogsBody tr');
+                    rows.forEach(row => {
+                        const id = parseInt(row.dataset.id);
+                        if (id > lastId) {
+                            lastId = id;
+                        }
+                    });
+                }
+                
+                function refreshLogs() {
+                    fetch('/admin/audit-logs/refresh?limit=100')
+                        .then(response => response.json())
+                        .then(data => {
+                            const tbody = document.getElementById('auditLogsBody');
+                            tbody.innerHTML = '';
+                            
+                            data.forEach(log => {
+                                const row = createLogRow(log);
+                                tbody.appendChild(row);
+                            });
+                            
+                            updateLastUpdate();
+                            updateLastId();
+                            document.getElementById('totalEvents').textContent = data.length;
+                        })
+                        .catch(error => console.error('Error refreshing logs:', error));
+                }
+                
+                function getLiveLogs() {
+                    const url = lastId > 0 ? `/admin/audit-logs/live?afterId=${lastId}` : '/admin/audit-logs/live';
+                    
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                const tbody = document.getElementById('auditLogsBody');
+                                
+                                // Add new logs at the top
+                                data.reverse().forEach(log => {
+                                    const row = createLogRow(log);
+                                    row.classList.add('new-row');
+                                    tbody.insertBefore(row, tbody.firstChild);
+                                    
+                                    // Update lastId
+                                    if (log.id > lastId) {
+                                        lastId = log.id;
+                                    }
+                                    
+                                    // Remove the highlight after animation
+                                    setTimeout(() => {
+                                        row.classList.remove('new-row');
+                                    }, 3000);
+                                });
+                                
+                                // Remove old logs if more than 100
+                                while (tbody.children.length > 100) {
+                                    tbody.removeChild(tbody.lastChild);
+                                }
+                                
+                                updateLastUpdate();
+                                document.getElementById('totalEvents').textContent = tbody.children.length;
+                            }
+                        })
+                        .catch(error => console.error('Error getting live logs:', error));
+                }
+                
+                function createLogRow(log) {
+                    const row = document.createElement('tr');
+                    row.className = log.success ? 'success-true' : 'success-false';
+                    row.dataset.id = log.id;
+                    
+                    // Process username if needed
+                    let userId = log.userId || '-';
+                    let username = log.username || '';
+                    let userRole = log.userRole || '-';
+                    
+                    if (username.includes('|')) {
+                        const parts = username.split('|');
+                        if (parts.length >= 3) {
+                            username = parts[0];
+                            userId = parts[1];
+                            userRole = parts[2];
+                        }
+                    }
+                    
+                    // Make entity description readable
+                    let entityType = log.entity_type || '';
+                    if (entityType === 'Visit') {
+                        entityType = 'Patient Visit';
+                    }
+                    
+                    // Clean up description
+                    let description = log.event_description || '';
+                    description = description.replace(/with ID \d+/, ''); // Remove redundant ID from description
+                    
+                    row.innerHTML = `
+                        <td><small>${log.formattedTimestamp || ''}</small></td>
+                        <td><span class="badge bg-secondary">${userId}</span></td>
+                        <td><strong>${username}</strong></td>
+                        <td><span class="badge bg-info text-dark">${userRole}</span></td>
+                        <td><span class="event-${log.event_type}">${log.event_type || ''}</span></td>
+                        <td>${description}</td>
+                        <td>${entityType ? `${entityType}${log.entity_id ? ' <span class="badge bg-light text-dark">#' + log.entity_id + '</span>' : ''}` : '-'}</td>
+                        <td>${log.success ? '<span class="badge bg-success"><i class="fas fa-check"></i></span>' : '<span class="badge bg-danger"><i class="fas fa-times"></i></span>'}</td>
+                        <td><small>${log.ip_address || '-'}</small></td>
+                    `;
+                    
+                    return row;
+                }
+                
+                function updateLastUpdate() {
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                }
+                
+                function toggleAutoRefresh() {
+                    if (document.getElementById('autoRefresh').checked) {
+                        autoRefreshInterval = setInterval(getLiveLogs, 5000);
+                        document.getElementById('refreshIndicator').style.display = 'inline-block';
+                    } else {
+                        clearInterval(autoRefreshInterval);
+                        document.getElementById('refreshIndicator').style.display = 'none';
+                    }
+                }
+                
+                // Initialize
+                document.addEventListener('DOMContentLoaded', function() {
+                    updateLastUpdate();
+                    updateLastId();
+                    
+                    // Set up auto-refresh
+                    document.getElementById('autoRefresh').addEventListener('change', toggleAutoRefresh);
+                    toggleAutoRefresh();
+                    
+                    // Trigger immediate refresh on load
+                    setTimeout(getLiveLogs, 1000);
+                });
+            </script>
+        </div>
+    </body>
+</html>

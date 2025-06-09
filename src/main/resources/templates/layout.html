@@ -1,55 +1,565 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <head>
-        <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">[[#{app.title}]]</title>
+        <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">Best Treatment Ever</title>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
         <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link th:href="@{/webjars/flatpickr/4.6.13/dist/flatpickr.min.css}" rel="stylesheet" />
         <link th:href="@{/css/app.css}" rel="stylesheet" />
+        <link th:href="@{/css/custom.css}" rel="stylesheet" />
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                --primary-color: #667eea;
+                --secondary-color: #764ba2;
+                --border-radius: 20px;
+            }
+            
+            * {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            
+            body {
+                background: var(--primary-gradient);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Navigation Bar */
+            header {
+                padding: 1rem 0;
+                position: relative;
+                z-index: 1030;
+            }
+            
+            header .container {
+                background-color: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                border-radius: var(--border-radius);
+                padding: 0.5rem 2rem;
+                position: relative;
+            }
+            
+            .navbar {
+                padding: 0.5rem 0;
+            }
+            
+            .navbar-brand {
+                font-weight: 700;
+                font-size: 1.5rem;
+                color: var(--primary-color) !important;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .navbar-brand:hover {
+                transform: translateX(5px);
+            }
+            
+            .navbar-brand i {
+                font-size: 1.8rem;
+                background: var(--primary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            
+            .nav-link {
+                font-weight: 500;
+                transition: all 0.3s ease;
+                padding: 0.5rem 1rem !important;
+                border-radius: 8px;
+                margin: 0 4px;
+            }
+            
+            .nav-link:hover {
+                color: var(--primary-color) !important;
+                background: rgba(102, 126, 234, 0.1);
+            }
+            
+            .navbar-collapse {
+                position: relative;
+                z-index: 1040;
+            }
+            
+            .badge-role {
+                background: var(--primary-gradient);
+                color: white;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                margin-left: 8px;
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            }
+            
+            /* Dropdown Improvements */
+            .dropdown {
+                position: static !important;
+            }
+            
+            .dropdown-menu {
+                position: absolute !important;
+                top: 100% !important;
+                right: 0 !important;
+                left: auto !important;
+                border: none;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+                border-radius: 16px;
+                margin-top: 0.75rem !important;
+                padding: 0.75rem;
+                min-width: 260px;
+                background: white;
+                z-index: 1100 !important;
+                display: none;
+            }
+            
+            .dropdown-menu.show {
+                display: block !important;
+            }
+            
+            /* Remove checkbox appearance */
+            input[type="checkbox"] {
+                display: none !important;
+            }
+            
+            .dropdown-header {
+                color: var(--primary-color);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                letter-spacing: 0.5px;
+                padding: 0.5rem 1rem;
+                margin-bottom: 0.25rem;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .dropdown-item {
+                padding: 0.75rem 1rem;
+                border-radius: 10px;
+                transition: all 0.2s ease;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .dropdown-item:hover {
+                background: rgba(102, 126, 234, 0.1);
+                transform: translateX(5px);
+            }
+            
+            .dropdown-item i {
+                width: 20px;
+                text-align: center;
+                color: var(--primary-color);
+            }
+            
+            .dropdown-divider {
+                margin: 0.5rem 0;
+                opacity: 0.1;
+            }
+            
+            /* Main Content Area */
+            main {
+                flex: 1;
+                padding: 2rem 0 3rem;
+                position: relative;
+                z-index: 1;
+            }
+            
+            main > .container {
+                background: rgba(255, 255, 255, 0.98);
+                border-radius: var(--border-radius);
+                padding: 40px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                min-height: 500px;
+                position: relative;
+                z-index: 1;
+            }
+            
+            /* Alerts */
+            .alert {
+                border-radius: 12px;
+                border: none;
+                padding: 16px 24px;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .alert i {
+                font-size: 1.25rem;
+            }
+            
+            .alert-success {
+                background-color: #d4edda;
+                color: #155724;
+                border-left: 4px solid #28a745;
+            }
+            
+            .alert-info {
+                background-color: #d1ecf1;
+                color: #0c5460;
+                border-left: 4px solid #17a2b8;
+            }
+            
+            .alert-danger {
+                background-color: #f8d7da;
+                color: #721c24;
+                border-left: 4px solid #dc3545;
+            }
+            
+            /* Footer */
+            footer {
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                border-top: 1px solid rgba(102, 126, 234, 0.1);
+                padding: 2rem 0;
+                margin-top: auto;
+            }
+            
+            .footer-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 2rem;
+            }
+            
+            .footer-brand {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-weight: 600;
+                color: var(--primary-color);
+            }
+            
+            .footer-brand i {
+                font-size: 2rem;
+                background: var(--primary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            
+            .footer-links a {
+                color: #6c757d;
+                text-decoration: none;
+                margin: 0 15px;
+                transition: color 0.3s ease;
+                font-weight: 500;
+            }
+            
+            .footer-links a:hover {
+                color: var(--primary-color);
+            }
+            
+            .footer-security {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                color: #6c757d;
+                font-size: 0.875rem;
+            }
+            
+            .footer-security i {
+                color: #28a745;
+            }
+            
+            /* Mobile Responsive Improvements */
+            .navbar-toggler {
+                border: 2px solid var(--primary-color);
+                padding: 4px 12px;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+            
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+                border-color: var(--secondary-color);
+            }
+            
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23667eea' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+                width: 24px;
+                height: 24px;
+            }
+            
+            /* Mobile Menu Styles */
+            @media (max-width: 768px) {
+                header .container {
+                    padding: 0.5rem 1rem;
+                }
+                
+                .navbar-brand {
+                    font-size: 1.25rem;
+                }
+                
+                .navbar-brand i {
+                    font-size: 1.5rem;
+                }
+                
+                .navbar-collapse {
+                    background: white;
+                    margin-top: 1rem;
+                    padding: 1rem;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                }
+                
+                .navbar-nav {
+                    gap: 0.5rem;
+                }
+                
+                .nav-link {
+                    padding: 0.75rem 1rem !important;
+                    margin: 0 !important;
+                    border-radius: 8px;
+                }
+                
+                .dropdown-menu {
+                    position: static !important;
+                    transform: none !important;
+                    margin-top: 0.5rem !important;
+                    box-shadow: none;
+                    background: rgba(102, 126, 234, 0.05);
+                    border: 1px solid rgba(102, 126, 234, 0.1);
+                }
+                
+                .badge-role {
+                    display: inline-block;
+                    margin-top: 5px;
+                    margin-left: 0;
+                }
+                
+                main > .container {
+                    padding: 20px;
+                    margin: 0 10px;
+                    border-radius: 15px;
+                }
+                
+                .footer-content {
+                    flex-direction: column;
+                    text-align: center;
+                    gap: 1.5rem;
+                }
+                
+                .footer-links {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 10px;
+                }
+                
+                .footer-links a {
+                    margin: 0 10px;
+                }
+                
+                .footer-security {
+                    flex-direction: column;
+                    gap: 5px;
+                }
+            }
+        </style>
         <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}" defer></script>
         <script th:src="@{/webjars/flatpickr/4.6.13/dist/flatpickr.min.js}" defer></script>
         <script th:src="@{/js/app.js}" defer></script>
+        <script>
+            // Fix for dropdown positioning
+            document.addEventListener('DOMContentLoaded', function() {
+                const dropdowns = document.querySelectorAll('.dropdown-toggle');
+                dropdowns.forEach(dropdown => {
+                    dropdown.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const menu = this.nextElementSibling;
+                        if (menu && menu.classList.contains('dropdown-menu')) {
+                            // Ensure dropdown shows above other content
+                            setTimeout(() => {
+                                if (menu.classList.contains('show')) {
+                                    menu.style.position = 'absolute';
+                                    menu.style.zIndex = '9999';
+                                }
+                            }, 10);
+                        }
+                    });
+                });
+            });
+        </script>
     </head>
     <body>
-        <header class="bg-light">
+        <header>
             <div class="container">
-                <nav class="navbar navbar-light navbar-expand-md">
+                <nav class="navbar navbar-expand-md">
                     <a th:href="@{/}" class="navbar-brand">
-                        <img th:src="@{/images/logo.png}" th:alt="#{app.title}" width="30" height="30" class="d-inline-block align-top">
-                        <span class="ps-1">[[#{app.title}]]</span>
+                        <i class="fas fa-hospital-alt"></i>
+                        <span>Best Treatment Ever</span>
                     </a>
-                    <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarToggle"
-                            th:aria-label="#{navigation.toggle}" aria-controls="navbarToggle" aria-expanded="false">
-                        <span class="navbar-toggler-icon"></span>
+                    <button type="button" 
+                            class="navbar-toggler border-0 shadow-sm" 
+                            data-bs-toggle="collapse" 
+                            data-bs-target="#navbarToggle"
+                            aria-label="Toggle navigation" 
+                            aria-controls="navbarToggle" 
+                            aria-expanded="false">
+                        <i class="fas fa-bars" style="color: var(--primary-color); font-size: 1.5rem;"></i>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarToggle">
                         <ul class="navbar-nav ms-auto">
                             <li class="navbar-item">
-                                <a th:href="@{/}" class="nav-link">[[#{navigation.home}]]</a>
+                                <a th:href="@{/}" class="nav-link">
+                                    <i class="fas fa-home"></i> [[#{navigation.home}]]
+                                </a>
                             </li>
-                            <li class="navbar-item dropdown">
+                            <!-- Quick Access - Only for users with admin access -->
+                            <li class="navbar-item dropdown" sec:authorize="hasAnyRole('ADMIN','DOCTOR','SECRETARIAT')">
                                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" id="navbarEntitiesLink" role="button"
-                                        aria-expanded="false">[[#{navigation.entities}]]</a>
+                                        aria-expanded="false">
+                                    <i class="fas fa-th"></i> Quick Access
+                                </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarEntitiesLink">
-                                    <li><a th:href="@{/hospusers}" class="dropdown-item">[[#{hospuser.list.headline}]]</a></li>
-                                    <li><a th:href="@{/patientvisits}" class="dropdown-item">[[#{patientvisit.list.headline}]]</a></li>
-                                    <li><a th:href="@{/roles}" class="dropdown-item">[[#{role.list.headline}]]</a></li>
+                                    <li sec:authorize="hasAnyRole('ADMIN','SECRETARIAT')">
+                                        <a th:href="@{/hospusers}" class="dropdown-item">
+                                            <i class="fas fa-users"></i> [[#{hospuser.list.headline}]]
+                                        </a>
+                                    </li>
+
+                                    <li sec:authorize="hasAnyRole('ADMIN','DOCTOR')">
+                                        <a th:href="@{/patientvisits}" class="dropdown-item">
+                                            <i class="fas fa-notes-medical"></i> [[#{patientvisit.list.headline}]]
+                                        </a>
+                                    </li>
+                                    <li sec:authorize="hasRole('ADMIN')">
+                                        <a th:href="@{/roles}" class="dropdown-item">
+                                            <i class="fas fa-user-shield"></i> [[#{role.list.headline}]]
+                                        </a>
+                                    </li>
+                                    <li sec:authorize="hasRole('ADMIN')">
+                                        <a th:href="@{/admin/audit-logs}" class="dropdown-item">
+                                            <i class="fas fa-file-shield"></i> Audit Logs
+                                        </a>
+                                    </li>
+                                    <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
+                                    <li sec:authorize="hasRole('ADMIN')">
+                                        <a th:href="@{/security-test}" class="dropdown-item">
+                                            <i class="fas fa-flask"></i> Security Test
+                                        </a>
+                                    </li>
                                 </ul>
+                            </li>
+                            <li class="navbar-item dropdown" sec:authorize="isAuthenticated()">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" id="navbarUserLink" role="button"
+                                        aria-expanded="false">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span sec:authentication="name">User</span>
+                                    <span class="badge-role" 
+                                          th:text="${#strings.replace(#authentication.principal.authorities[0], 'ROLE_', '')}">
+                                        PATIENT
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserLink">
+                                    <li><h6 class="dropdown-header"><i class="fas fa-th-large"></i> Your Actions</h6></li>
+                                    <li sec:authorize="hasRole('PATIENT')">
+                                        <a th:href="@{/patient/my-records}" class="dropdown-item">
+                                            <i class="fas fa-file-medical"></i> My Medical Records
+                                        </a>
+                                    </li>
+                                    <li><a th:href="@{/profile}" class="dropdown-item">
+                                        <i class="fas fa-user"></i> My Profile
+                                    </a></li>
+                                    <li><a th:href="@{/auth/change-password}" class="dropdown-item">
+                                        <i class="fas fa-key"></i> Change Password
+                                    </a></li>
+                                    <li sec:authorize="hasRole('ADMIN')">
+                                        <a th:href="@{/security-test}" class="dropdown-item">
+                                            <i class="fas fa-shield-alt"></i> Security Test
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form th:action="@{/auth/logout}" method="post" class="px-3">
+                                            <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none">
+                                                <i class="fas fa-sign-out-alt"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="navbar-item" sec:authorize="!isAuthenticated()">
+                                <a th:href="@{/auth/login}" class="nav-link">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </a>
                             </li>
                         </ul>
                     </div>
                 </nav>
             </div>
         </header>
-        <main class="my-5">
+        
+        <main>
             <div class="container">
-                <p th:if="${MSG_SUCCESS}" class="alert alert-success mb-4" role="alert">[[${MSG_SUCCESS}]]</p>
-                <p th:if="${MSG_INFO}" class="alert alert-info mb-4" role="alert">[[${MSG_INFO}]]</p>
-                <p th:if="${MSG_ERROR}" class="alert alert-danger mb-4" role="alert">[[${MSG_ERROR}]]</p>
+                <p th:if="${MSG_SUCCESS}" class="alert alert-success mb-4" role="alert">
+                    <i class="fas fa-check-circle"></i> [[${MSG_SUCCESS}]]
+                </p>
+                <p th:if="${MSG_INFO}" class="alert alert-info mb-4" role="alert">
+                    <i class="fas fa-info-circle"></i> [[${MSG_INFO}]]
+                </p>
+                <p th:if="${MSG_ERROR}" class="alert alert-danger mb-4" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> [[${MSG_ERROR}]]
+                </p>
                 <div layout:fragment="content" />
             </div>
         </main>
+        
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <i class="fas fa-hospital-alt"></i>
+                        <div>
+                            <div style="font-size: 1.125rem;">Best Treatment Ever</div>
+                            <div style="font-size: 0.875rem; font-weight: 400; color: #6c757d;">
+                                Secure Hospital Management System
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <a href="/about">About</a>
+                        <a href="/privacy">Privacy</a>
+                        <a href="/terms">Terms</a>
+                        <a href="/contact">Contact</a>
+                    </div>
+                    
+                    <div class="footer-security">
+                        <i class="fas fa-lock"></i>
+                        <span>256-bit SSL Encryption</span>
+                        <span>•</span>
+                        <i class="fas fa-shield-alt"></i>
+                        <span>HIPAA Compliant</span>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3 pt-3 border-top" style="color: #6c757d; font-size: 0.875rem;">
+                    &copy; 2025 Best Treatment Ever. All rights reserved. 
+                    <span class="d-none d-md-inline">• DEV6003 Secure Application Development</span>
+                </div>
+            </div>
+        </footer>
     </body>
 </html>

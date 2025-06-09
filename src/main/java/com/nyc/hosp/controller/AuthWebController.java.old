@@ -1,0 +1,20 @@
+package com.nyc.hosp.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/auth")
+public class AuthWebController {
+    
+    @GetMapping("/login")
+    public String showLoginPage() {
+        return "auth/login";
+    }
+    
+    @GetMapping("/change-password")
+    public String showChangePasswordPage() {
+        return "auth/change-password";
+    }
+}

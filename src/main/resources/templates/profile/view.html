@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>My Profile</title>
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #667eea;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .profile-role {
+            background: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+        .info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .info-section h3 {
+            color: #495057;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-label i {
+            width: 20px;
+            text-align: center;
+            color: #667eea;
+        }
+        .info-value {
+            flex: 1;
+            color: #495057;
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .btn-action:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .alert-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-box i {
+            font-size: 20px;
+        }
+        .password-info {
+            background: #e7f3ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #0066cc;
+        }
+        .password-info h5 {
+            color: #0066cc;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 30px 20px;
+            }
+            
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 36px;
+            }
+            
+            .profile-name {
+                font-size: 1.5rem;
+            }
+            
+            .info-section {
+                padding: 20px;
+            }
+            
+            .info-section h3 {
+                font-size: 1.125rem;
+            }
+            
+            .info-label {
+                width: 140px;
+                font-size: 0.875rem;
+            }
+            
+            .info-value {
+                font-size: 0.875rem;
+            }
+            
+            .btn-action {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+                display: block;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .password-info {
+                padding: 15px;
+            }
+            
+            .password-info h5 {
+                font-size: 1rem;
+            }
+            
+            .password-info p {
+                font-size: 0.875rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 0;
+            }
+            
+            .info-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .profile-header {
+                padding: 25px 15px;
+            }
+            
+            .profile-name {
+                font-size: 1.25rem;
+            }
+            
+            .profile-role {
+                font-size: 0.875rem;
+                padding: 6px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <span th:if="${user.firstName != null and user.lastName != null}" 
+                      th:text="${#strings.substring(user.firstName, 0, 1).toUpperCase() + #strings.substring(user.lastName, 0, 1).toUpperCase()}">JD</span>
+                <span th:if="${user.firstName == null or user.lastName == null}">
+                    <i class="fas fa-user"></i>
+                </span>
+            </div>
+            <h1 class="profile-name">
+                <span th:if="${user.firstName != null and user.lastName != null}" 
+                      th:text="${user.firstName + ' ' + user.lastName}">John Doe</span>
+                <span th:if="${user.firstName == null or user.lastName == null}" 
+                      th:text="${user.username}">username</span>
+            </h1>
+            <div class="profile-role" th:text="${!#lists.isEmpty(user.roles) ? #strings.replace(user.roles[0].name, 'ROLE_', '') : 'USER'}">PATIENT</div>
+        </div>
+        
+        <!-- Success Messages -->
+        <div th:if="${success}" class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+        </div>
+        
+        <!-- Password Warning -->
+        <div th:if="${passwordExpiringSoon}" class="alert-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Your password will expire in <strong th:text="${daysUntilExpiry}">10</strong> days. Please change it soon.</span>
+        </div>
+        
+        <!-- Personal Information Section -->
+        <div class="info-section">
+            <h3><i class="fas fa-user"></i> Personal Information</h3>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-user-circle"></i> Username
+                </div>
+                <div class="info-value" th:text="${user.username}">jdoe</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-envelope"></i> Email
+                </div>
+                <div class="info-value" th:text="${user.email}">jdoe@mail.com</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-id-card"></i> Full Name
+                </div>
+                <div class="info-value">
+                    <span th:if="${user.firstName != null and user.lastName != null}" 
+                          th:text="${user.firstName + ' ' + user.lastName}">John Doe</span>
+                    <span th:if="${user.firstName == null or user.lastName == null}" class="text-muted">Not provided</span>
+                </div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-calendar-alt"></i> Date of Birth
+                </div>
+                <div class="info-value">
+                    <span th:if="${user.dateOfBirth != null}" th:text="${#dates.format(user.dateOfBirth, 'dd/MM/yyyy')}">06/02/2008</span>
+                    <span th:if="${user.dateOfBirth == null}" class="text-muted">Not provided</span>
+                </div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-user-tag"></i> Role
+                </div>
+                <div class="info-value">
+                    <span class="badge bg-primary" th:text="${!#lists.isEmpty(user.roles) ? #strings.replace(user.roles[0].name, 'ROLE_', '') : 'USER'}">PATIENT</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Information Section -->
+        <div class="info-section">
+            <h3><i class="fas fa-shield-alt"></i> Security Information</h3>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-clock"></i> Last Login
+                </div>
+                <div class="info-value" th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}">08/06/2025 15:17</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="fas fa-key"></i> Password Last Changed
+                </div>
+                <div class="info-value">
+                    <span th:if="${user.lastPasswordChange != null}" th:text="${#dates.format(user.lastPasswordChange, 'dd/MM/yyyy')}">08/06/2025</span>
+                    <span th:if="${user.lastPasswordChange == null}" class="text-muted">Never changed</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Password Policy Info -->
+        <div class="password-info">
+            <h5><i class="fas fa-info-circle"></i> Password Policy</h5>
+            <p class="mb-0">Passwords must be changed every 90 days and cannot be reused from your last 5 passwords.</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <a href="/profile/edit" class="btn-action">
+                <i class="fas fa-user-edit"></i> Edit Profile
+            </a>
+            <a href="/profile/change-password" class="btn-action btn-warning">
+                <i class="fas fa-key"></i> Change Password
+            </a>
+            <a href="/" class="btn-action btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Secure Login - Hospital Management</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .https-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="https-badge">
+            <i class="fas fa-lock"></i>
+            <span>HTTPS + Client Hashing</span>
+        </div>
+        
+        <h2 class="text-center mb-4">🏥 Hospital Login</h2>
+        
+        <div th:if="${param.error}" class="alert alert-danger">
+            Invalid credentials
+        </div>
+        
+        <form id="secureForm" th:action="@{/auth/login}" method="post">
+            <!-- Hidden fields for processed data -->
+            <input type="hidden" name="username" id="hiddenUsername" />
+            <input type="hidden" name="password" id="hiddenPassword" />
+            
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="usernameInput" 
+                       required />
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" 
+                       class="form-control" 
+                       id="passwordInput" 
+                       required />
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Secure Sign In
+                </button>
+            </div>
+        </form>
+        
+        <div class="alert alert-info mt-3">
+            <small>
+                <i class="fas fa-info-circle"></i>
+                Password is hashed client-side before transmission
+            </small>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('secureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get values
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            // Hash the password
+            const hashedPassword = CryptoJS.SHA256(password).toString();
+            
+            // Set hidden fields
+            document.getElementById('hiddenUsername').value = username;
+            document.getElementById('hiddenPassword').value = hashedPassword;
+            
+            // Clear visible fields
+            document.getElementById('passwordInput').value = '';
+            
+            // Submit form
+            this.submit();
+        });
+    </script>
+</body>
+</html>

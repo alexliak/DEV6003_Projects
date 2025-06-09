@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+<head>
+    <title>Encryption Demo - Admin Only</title>
+    <style>
+        .encryption-header {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 2rem;
+            margin: -1.5rem -1.5rem 2rem -1.5rem;
+            border-radius: 0.375rem 0.375rem 0 0;
+        }
+        
+        .security-info {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .database-view {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .encrypted-data {
+            color: #ff6b6b;
+            word-break: break-all;
+        }
+        
+        .decrypted-data {
+            color: #51cf66;
+        }
+        
+        .null-data {
+            color: #868e96;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="encryption-header">
+            <h1 class="h2 mb-2">
+                <i class="fas fa-lock"></i> Encryption Demonstration
+            </h1>
+            <p class="mb-0">Proof that diagnoses are encrypted in the database</p>
+        </div>
+        
+        <div class="security-info">
+            <h5><i class="fas fa-shield-alt"></i> Security Implementation</h5>
+            <ul>
+                <li><strong>Algorithm:</strong> <span th:text="${encryptionAlgorithm}">AES-256-GCM</span></li>
+                <li><strong>Key Storage:</strong> <span th:text="${keyLocation}">application.properties</span></li>
+                <li><strong>Database:</strong> Stores ONLY encrypted data</li>
+                <li><strong>Decryption:</strong> Happens in-memory when authorized users access</li>
+            </ul>
+        </div>
+        
+        <h3>What's Actually in the Database:</h3>
+        <div class="database-view">
+            <pre>mysql&gt; SELECT visitid, diagnosis, encrypted_diagnosis FROM patientvisit;</pre>
+            <table class="table table-dark table-sm">
+                <thead>
+                    <tr>
+                        <th>Visit ID</th>
+                        <th>Plain Diagnosis (Should be NULL)</th>
+                        <th>Encrypted Diagnosis</th>
+                        <th>Decrypted (In App Only)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${databaseContent}">
+                        <td th:text="${row.visitid}">1</td>
+                        <td>
+                            <span th:if="${row.plain_diagnosis != null}" class="text-danger">
+                                ⚠️ NOT ENCRYPTED: <span th:text="${row.plain_diagnosis}"></span>
+                            </span>
+                            <span th:if="${row.plain_diagnosis == null}" class="null-data">NULL</span>
+                        </td>
+                        <td class="encrypted-data">
+                            <span th:if="${row.encrypted_diagnosis != null}" 
+                                  th:text="${#strings.abbreviate(row.encrypted_diagnosis, 50)}">encrypted...</span>
+                            <span th:if="${row.encrypted_diagnosis != null}" 
+                                  th:text="' (' + ${row.encrypted_length} + ' bytes)'"></span>
+                            <span th:if="${row.encrypted_diagnosis == null}" class="null-data">NULL</span>
+                        </td>
+                        <td class="decrypted-data">
+                            <span th:text="${row.decrypted_diagnosis}">decrypted text</span>
+                        </td>
+                        <td>
+                            <span th:if="${row.decryption_status == 'SUCCESS'}" class="badge bg-success">
+                                <i class="fas fa-check"></i> Decrypted
+                            </span>
+                            <span th:unless="${row.decryption_status == 'SUCCESS'}" class="badge bg-danger">
+                                <i class="fas fa-times"></i> Failed
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="alert alert-warning mt-3">
+            <h5><i class="fas fa-exclamation-triangle"></i> Security Proof</h5>
+            <p>If someone steals the database, they see ONLY the encrypted data. Without the encryption key from application.properties, they cannot decrypt the diagnoses!</p>
+        </div>
+        
+        <a href="/admin" class="btn btn-secondary">Back to Admin Dashboard</a>
+    </div>
+</body>
+</html>

@@ -8,6 +8,7 @@ import com.nyc.hosp.encryption.DiagnosisEncryptionService;
 import com.nyc.hosp.repos.HospuserRepository;
 import com.nyc.hosp.repos.PatientvisitRepository;
 import com.nyc.hosp.security.CustomUserPrincipal;
+import com.nyc.hosp.security.SecurityEventLogger;
 import com.nyc.hosp.validation.InputSanitizer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -50,7 +51,10 @@ public class VisitController {
     @Autowired
     private HttpServletRequest request;
     
-    @PostMapping("/create")
+    @Autowired
+    private SecurityEventLogger securityEventLogger;
+    
+    @PostMapping
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
     public ResponseEntity<?> createVisit(@Valid @RequestBody VisitDTO visitDTO, 
                                        Authentication authentication) {
@@ -61,6 +65,8 @@ public class VisitController {
                 auditLogService.logSecurityViolation(authentication.getName(), 
                     "MALICIOUS_INPUT", "Attempted SQL injection or XSS in diagnosis", 
                     request.getRemoteAddr());
+                securityEventLogger.logEvent("SECURITY_VIOLATION", authentication.getName(),
+                    "MALICIOUS_INPUT_ATTEMPT", "BLOCKED", "SQL injection or XSS detected in diagnosis field");
                 return ResponseEntity.badRequest()
                     .body(Map.of("message", "Invalid input detected"));
             }
@@ -154,6 +160,47 @@ public class VisitController {
             logger.error("Error updating visit", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "Error updating visit"));
+        }
+    }
+    
+    @GetMapping
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    public ResponseEntity<?> getAllVisits(Authentication authentication) {
+        try {
+            List<Patientvisit> visits = visitRepository.findAll();
+            
+            // Decrypt diagnoses for authorized users
+            List<Map<String, Object>> visitList = visits.stream().map(visit -> {
+                Map<String, Object> visitMap = new HashMap<>();
+                visitMap.put("id", visit.getVisitid());
+                visitMap.put("visitDate", visit.getVisitdate());
+                visitMap.put("patientName", visit.getPatient().getUsername());
+                visitMap.put("doctorName", visit.getDoctor().getUsername());
+                
+                try {
+                    if (visit.getEncryptedDiagnosis() != null) {
+                        String decryptedDiagnosis = encryptionService.decrypt(visit.getEncryptedDiagnosis());
+                        visitMap.put("diagnosis", decryptedDiagnosis);
+                    } else {
+                        visitMap.put("diagnosis", "No diagnosis recorded");
+                    }
+                } catch (Exception e) {
+                    visitMap.put("diagnosis", "Error decrypting diagnosis");
+                }
+                
+                return visitMap;
+            }).collect(Collectors.toList());
+            
+            // Audit log
+            auditLogService.logDataAccess(authentication.getName(), "AllVisits", 
+                null, "VIEW", true);
+            
+            return ResponseEntity.ok(visitList);
+            
+        } catch (Exception e) {
+            logger.error("Error fetching all visits", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Error fetching visits"));
         }
     }
     

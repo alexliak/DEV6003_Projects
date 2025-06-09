@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+    <head>
+        <title>Email Demo - Mock Emails</title>
+    </head>
+    <body>
+        <div layout:fragment="content">
+            <div class="d-flex flex-wrap mb-4">
+                <h1 class="flex-grow-1">📧 Mock Email Inbox (Demo)</h1>
+                <div>
+                    <a th:href="@{/email-demo/clear}" class="btn btn-danger ms-2">Clear All</a>
+                    <a th:href="@{/}" class="btn btn-secondary ms-2">Back to Home</a>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>Demo Mode:</strong> Emails are stored in memory instead of being sent. Perfect for testing!
+            </div>
+            
+            <div th:if="${emails.empty}">
+                <p>No emails sent yet. Try registering a user or resetting a password!</p>
+            </div>
+            
+            <div th:if="${!emails.empty}" class="row">
+                <div th:each="email : ${emails}" class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header" th:classappend="${email.type == 'PASSWORD_RESET' ? 'bg-warning' : 'bg-info'} text-white">
+                            <strong>[[${email.type}]]</strong> - [[${email.subject}]]
+                        </div>
+                        <div class="card-body">
+                            <p><strong>To:</strong> [[${email.to}]]</p>
+                            <p><strong>Sent:</strong> [[${#temporals.format(email.sentAt, 'dd/MM/yyyy HH:mm:ss')}]]</p>
+                            <hr>
+                            <pre class="bg-light p-2">[[${email.content}]]</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

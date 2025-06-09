@@ -2,24 +2,68 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layout}">
     <head>
-        <title>[[#{patientvisit.edit.headline}]]</title>
+        <meta charset="UTF-8">
+        <title>Edit Patient Exam</title>
     </head>
     <body>
         <div layout:fragment="content">
             <div class="d-flex flex-wrap mb-4">
-                <h1 class="flex-grow-1">[[#{patientvisit.edit.headline}]]</h1>
+                <h1 class="flex-grow-1">Edit Patient Exam</h1>
                 <div>
-                    <a th:href="@{/patientvisits}" class="btn btn-secondary">[[#{patientvisit.edit.back}]]</a>
+                    <a th:href="@{/patientvisits}" class="btn btn-secondary">Back to list</a>
                 </div>
             </div>
-            <div th:replace="~{fragments/forms::globalErrors('patientvisit')}" />
-            <form th:action="${requestUri}" method="post" novalidate="">
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='visitid', disabled=true, type='number')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='vistidate', inputClass='js-datepicker')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='diagnosis', type='textarea')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='patient', type='select')}" />
-                <div th:replace="~{fragments/forms::inputRow(object='patientvisit', field='doctor', type='select')}" />
-                <input type="submit" th:value="#{patientvisit.edit.headline}" class="btn btn-primary mt-4" />
+            
+            <!-- Error messages -->
+            <div th:if="${MSG_ERROR}" class="alert alert-danger" role="alert">
+                <span th:text="${MSG_ERROR}"></span>
+            </div>
+            
+            <!-- Encryption Notice -->
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-lock"></i> <strong>Security Notice:</strong> 
+                    Your updated diagnosis will be automatically encrypted.
+                </div>
+            </div>
+            
+            <form th:action="@{/patientvisits/edit/{id}(id=${patientvisit.visitid})}" method="post" accept-charset="UTF-8">
+                <!-- Visit ID (readonly) -->
+                <div class="mb-3">
+                    <label for="visitid" class="form-label">Exam ID</label>
+                    <input type="number" class="form-control" id="visitid" name="visitid" 
+                           th:value="${patientvisit.visitid}" readonly disabled>
+                </div>
+                
+                <!-- Visit Date -->
+                <div class="mb-3">
+                    <label for="visitdate" class="form-label">Examination Date</label>
+                    <input type="date" class="form-control" id="visitdate" name="visitdate" 
+                           th:value="${patientvisit.visitdate}" required>
+                </div>
+                
+                <!-- Diagnosis -->
+                <div class="mb-3">
+                    <label for="diagnosis" class="form-label">Diagnosis</label>
+                    <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" 
+                              th:text="${patientvisit.diagnosis}" required></textarea>
+                </div>
+                
+                <!-- Patient (readonly) -->
+                <div class="mb-3">
+                    <label for="patient" class="form-label">Patient</label>
+                    <select class="form-control" id="patient" name="patient" disabled>
+                        <option th:value="${patientvisit.patient}" selected>
+                            <span th:text="${patientvisit.patientName}">Patient Name</span>
+                        </option>
+                    </select>
+                </div>
+                
+                <!-- Hidden fields -->
+                <input type="hidden" name="doctor" th:value="${patientvisit.doctor}">
+                <input type="hidden" name="patient" th:value="${patientvisit.patient}">
+                
+                <button type="submit" class="btn btn-primary mt-4">Update Patient Exam</button>
             </form>
         </div>
     </body>

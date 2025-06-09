@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Security Test - Server Side</title>
+    <style>
+        .test-card {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+        .result-box {
+            background: white;
+            padding: 15px;
+            border: 1px solid #28a745;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error-box {
+            background: white;
+            padding: 15px;
+            border: 1px solid #dc3545;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h1>🔒 Security Test - Pure Spring Boot</h1>
+        <p class="lead">Server-side security testing without JavaScript</p>
+        
+        <div class="alert alert-info">
+            <strong>Current User:</strong> <span th:text="${currentUser}">User</span> | 
+            <strong>Roles:</strong> <span th:text="${currentRoles}">[ROLES]</span>
+        </div>
+        
+        <!-- 1. SQL Injection Test -->
+        <div class="test-card">
+            <h3>1. SQL Injection Test</h3>
+            <form th:action="@{/security-test/sql-injection}" method="post">
+                <div class="mb-3">
+                    <label>Try SQL injection:</label>
+                    <input type="text" name="input" class="form-control" 
+                           value="admin' OR '1'='1" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Test SQL Injection</button>
+            </form>
+            
+            <div th:if="${sqlResult}" class="result-box mt-3" th:text="${sqlResult}"></div>
+        </div>
+        
+        <!-- 2. Password Validation -->
+        <div class="test-card">
+            <h3>2. Password Validation</h3>
+            <form th:action="@{/security-test/password}" method="post">
+                <div class="mb-3">
+                    <label>Test password:</label>
+                    <input type="password" name="password" class="form-control" 
+                           placeholder="Try: weak or Password123!" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Check Password</button>
+            </form>
+            
+            <div th:if="${passwordResult}" class="result-box mt-3" th:text="${passwordResult}"></div>
+        </div>
+        
+        <!-- 3. Encryption Test -->
+        <div class="test-card">
+            <h3>3. Diagnosis Encryption</h3>
+            <form th:action="@{/security-test/encrypt}" method="post">
+                <div class="mb-3">
+                    <label>Diagnosis to encrypt:</label>
+                    <textarea name="diagnosis" class="form-control" rows="2" required>Patient has flu symptoms</textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Encrypt Diagnosis</button>
+            </form>
+            
+            <div th:if="${encryptResult}" class="result-box mt-3" th:text="${encryptResult}"></div>
+        </div>
+        
+        <!-- 4. Role Access Test -->
+        <div class="test-card">
+            <h3>4. Role-Based Access Control</h3>
+            <p>Click to test access:</p>
+            
+            <a th:href="@{/security-test/admin}" class="btn btn-info">Test Admin Access</a>
+            <a th:href="@{/security-test/doctor}" class="btn btn-info ms-2">Test Doctor Access</a>
+            
+            <div th:if="${accessResult}" class="result-box mt-3" th:text="${accessResult}"></div>
+            
+            <div th:if="${param.error}" class="error-box mt-3">
+                ❌ Access Denied! You don't have the required role.
+            </div>
+        </div>
+        
+        <!-- 5. Security Status Summary -->
+        <div class="test-card">
+            <h3>Security Features Summary</h3>
+            <ul>
+                <li>✅ Input Validation: SQL injection and XSS prevention</li>
+                <li>✅ Password Policy: 8+ chars with complexity requirements</li>
+                <li>✅ Account Lockout: After 3 failed attempts</li>
+                <li>✅ Role System: ADMIN, DOCTOR, SECRETARIAT, PATIENT</li>
+                <li>✅ Diagnosis Encryption: AES-256-GCM</li>
+                <li>✅ JWT Security: REST API protected</li>
+                <li>✅ TLS/HTTPS: Port 8443 with redirect from 8080</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

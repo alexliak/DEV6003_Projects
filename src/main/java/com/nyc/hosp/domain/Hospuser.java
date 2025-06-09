@@ -27,7 +27,7 @@ public class Hospuser {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastPasswordChange;
     
-    @Column(nullable = false)
+    @Column(name = "failed_login_attempts", nullable = false)
     private int failedLoginAttempts = 0;
 
     @Column(length = 100, unique = true, nullable = false)
@@ -35,6 +35,26 @@ public class Hospuser {
 
     @Column(nullable = false)
     private boolean accountLocked = false;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lockTime;
+    
+    @Column(nullable = false)
+    private boolean forcePasswordChange = false;
+    
+    // Profile fields
+    @Column(length = 100)
+    private String firstName;
+    
+    @Column(length = 100)
+    private String lastName;
+    
+    @Temporal(TemporalType.DATE)
+    private Date dateOfBirth;
+    
+    // Password history for preventing reuse
+    @Column(columnDefinition = "TEXT")
+    private String passwordHistory; // JSON array of hashed passwords
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -114,5 +134,65 @@ public class Hospuser {
 
     public void setFailedLoginAttempts(int failedLoginAttempts) {
         this.failedLoginAttempts = failedLoginAttempts;
+    }
+    
+    public Date getLockTime() {
+        return lockTime;
+    }
+    
+    public void setLockTime(Date lockTime) {
+        this.lockTime = lockTime;
+    }
+    
+    public boolean isForcePasswordChange() {
+        return forcePasswordChange;
+    }
+    
+    public void setForcePasswordChange(boolean forcePasswordChange) {
+        this.forcePasswordChange = forcePasswordChange;
+    }
+    
+    public String getFirstName() {
+        return firstName;
+    }
+    
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    
+    public String getLastName() {
+        return lastName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+    
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+    
+    public String getPasswordHistory() {
+        return passwordHistory;
+    }
+    
+    public void setPasswordHistory(String passwordHistory) {
+        this.passwordHistory = passwordHistory;
+    }
+    
+    public String getFullName() {
+        if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        } else if (firstName != null) {
+            return firstName;
+        } else if (lastName != null) {
+            return lastName;
+        } else {
+            return username;
+        }
     }
 }

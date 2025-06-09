@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Secure Login - Hospital Management</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .https-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: #667eea;
+            border: none;
+            padding: 0.75rem;
+        }
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        .security-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="https-badge">
+            <i class="fas fa-lock"></i>
+            <span>HTTPS Encrypted Connection</span>
+        </div>
+        
+        <h2 class="text-center mb-4">🏥 Hospital Login</h2>
+        
+        <div th:if="${param.error}" class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            Invalid username or password
+        </div>
+        
+        <div th:if="${param.logout}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            You have been logged out successfully
+        </div>
+        
+        <form th:action="@{/auth/login}" method="post">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="username" 
+                       name="username" 
+                       required 
+                       autofocus />
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" 
+                       class="form-control" 
+                       id="password" 
+                       name="password" 
+                       required />
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="/auth/forgot-password" class="text-decoration-none">
+                    <i class="fas fa-key"></i> Forgot Password?
+                </a>
+                <span class="mx-2">|</span>
+                <a href="/auth/register" class="text-decoration-none">
+                    <i class="fas fa-user-plus"></i> Register
+                </a>
+            </div>
+        </form>
+        
+        <div class="security-info">
+            <strong>🔒 Security Features:</strong>
+            <ul class="mb-0 small">
+                <li>All data encrypted with HTTPS/TLS</li>
+                <li>Passwords hashed with BCrypt</li>
+                <li>Account lockout protection</li>
+                <li>CSRF token protection</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Check if we're using HTTPS
+        if (location.protocol !== 'https:') {
+            console.warn('Warning: Not using HTTPS!');
+        }
+    </script>
+</body>
+</html>

@@ -1,15 +1,30 @@
 package com.nyc.hosp.model;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 
 public class PatientvisitDTO {
 
     private Integer visitid;
-    private LocalDate vistidate;
+
+    @NotNull
+    private LocalDate visitdate;
+
+    @Size(max = 1000)
     private String diagnosis;
-    private Long patient;
-    private Long doctor;
+
+    private Integer patient;
+
+    private Integer doctor;
+    
+    // Additional display fields
+    private String patientName;
+    private String doctorName;
+    private String doctorUsername;
+    private Integer patientAge;
+    private String formattedVisitDate;
 
     public Integer getVisitid() {
         return visitid;
@@ -19,12 +34,12 @@ public class PatientvisitDTO {
         this.visitid = visitid;
     }
 
-    public LocalDate getVistidate() {
-        return vistidate;
+    public LocalDate getVisitdate() {
+        return visitdate;
     }
 
-    public void setVistidate(final LocalDate vistidate) {
-        this.vistidate = vistidate;
+    public void setVisitdate(final LocalDate visitdate) {
+        this.visitdate = visitdate;
     }
 
     public String getDiagnosis() {
@@ -35,20 +50,60 @@ public class PatientvisitDTO {
         this.diagnosis = diagnosis;
     }
 
-    public Long getPatient() {
+    public Integer getPatient() {
         return patient;
     }
 
-    public void setPatient(final Long patient) {
+    public void setPatient(final Integer patient) {
         this.patient = patient;
     }
 
-    public Long getDoctor() {
+    public Integer getDoctor() {
         return doctor;
     }
 
-    public void setDoctor(final Long doctor) {
+    public void setDoctor(final Integer doctor) {
         this.doctor = doctor;
+    }
+    
+    public String getPatientName() {
+        return patientName;
+    }
+    
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+    
+    public String getDoctorName() {
+        return doctorName;
+    }
+    
+    public void setDoctorName(String doctorName) {
+        this.doctorName = doctorName;
+    }
+    
+    public Integer getPatientAge() {
+        return patientAge;
+    }
+    
+    public void setPatientAge(Integer patientAge) {
+        this.patientAge = patientAge;
+    }
+    
+    public String getFormattedVisitDate() {
+        return formattedVisitDate;
+    }
+    
+    public void setFormattedVisitDate(String formattedVisitDate) {
+        this.formattedVisitDate = formattedVisitDate;
+    }
+    
+    public String getDoctorUsername() {
+        return doctorUsername;
+    }
+    
+    public void setDoctorUsername(String doctorUsername) {
+        this.doctorUsername = doctorUsername;
     }
 
 }

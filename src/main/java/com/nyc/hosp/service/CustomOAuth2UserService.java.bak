@@ -1,0 +1,97 @@
+package com.nyc.hosp.service;
+
+import com.nyc.hosp.domain.Hospuser;
+import com.nyc.hosp.domain.Role;
+import com.nyc.hosp.repos.HospuserRepository;
+import com.nyc.hosp.repos.RoleRepository;
+import com.nyc.hosp.security.CustomUserPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+
+@Service
+@Transactional
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+    
+    @Autowired
+    private HospuserRepository userRepository;
+    
+    @Autowired
+    private RoleRepository roleRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Override
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        OAuth2User oauth2User = super.loadUser(userRequest);
+        
+        // Extract user info from OAuth2 provider
+        String email = oauth2User.getAttribute("email");
+        String name = oauth2User.getAttribute("name");
+        String googleId = oauth2User.getAttribute("sub");
+        
+        // Find or create user
+        Hospuser user = userRepository.findByEmail(email)
+            .orElseGet(() -> createNewUser(email, name, googleId));
+        
+        // Create CustomUserPrincipal with OAuth2 attributes
+        CustomUserPrincipal userPrincipal = CustomUserPrincipal.create(user);
+        
+        // Add OAuth2 attributes
+        Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
+        attributes.put("id", user.getId());
+        
+        return new CustomOAuth2UserPrincipal(userPrincipal, attributes);
+    }
+    
+    private Hospuser createNewUser(String email, String name, String googleId) {
+        Hospuser user = new Hospuser();
+        user.setEmail(email);
+        user.setUsername(email.split("@")[0] + "_" + googleId.substring(0, 6));
+        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString())); // Random password for OAuth users
+        
+        // Assign default role (PATIENT) for new OAuth users
+        Role patientRole = roleRepository.findByName(Role.RoleName.ROLE_PATIENT);
+        if (patientRole == null) {
+            patientRole = new Role();
+            patientRole.setName(Role.RoleName.ROLE_PATIENT);
+            patientRole = roleRepository.save(patientRole);
+        }
+        
+        user.setRoles(Collections.singleton(patientRole));
+        user.setAccountLocked(false);
+        user.setFailedLoginAttempts(0);
+        user.setLastPasswordChange(new Date());
+        
+        return userRepository.save(user);
+    }
+    
+    // Custom OAuth2User implementation
+    public static class CustomOAuth2UserPrincipal extends CustomUserPrincipal implements OAuth2User {
+        private Map<String, Object> attributes;
+        
+        public CustomOAuth2UserPrincipal(CustomUserPrincipal userPrincipal, Map<String, Object> attributes) {
+            super(userPrincipal.getId(), userPrincipal.getUsername(), userPrincipal.getEmail(), 
+                  userPrincipal.getPassword(), userPrincipal.getAuthorities(), userPrincipal.isEnabled());
+            this.attributes = attributes;
+        }
+        
+        @Override
+        public Map<String, Object> getAttributes() {
+            return attributes;
+        }
+        
+        @Override
+        public String getName() {
+            return String.valueOf(getId());
+        }
+    }
+}

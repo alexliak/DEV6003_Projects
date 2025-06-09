@@ -1,20 +1,406 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         layout:decorate="~{layout}">
     <head>
-        <title>[[#{home.index.headline}]]</title>
+        <title>Welcome to our Hospital!</title>
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <style>
+            .hero-section {
+                text-align: center;
+                margin-bottom: 60px;
+                position: relative;
+            }
+            
+            .hero-section::before {
+                content: '';
+                position: absolute;
+                top: -40px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100px;
+                height: 100px;
+                background: var(--primary-gradient);
+                border-radius: 50%;
+                opacity: 0.1;
+                filter: blur(40px);
+            }
+            
+            .hero-title {
+                font-size: 3.5rem;
+                font-weight: 800;
+                color: #2d3748;
+                margin-bottom: 20px;
+                letter-spacing: -0.02em;
+                line-height: 1.2;
+                position: relative;
+            }
+            
+            .hero-title i {
+                font-size: 3rem;
+                margin-right: 20px;
+                background: var(--primary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                vertical-align: middle;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.375rem;
+                color: #718096;
+                font-weight: 400;
+                letter-spacing: -0.01em;
+            }
+            
+            .action-box {
+                background: white;
+                border-radius: 20px;
+                padding: 40px 35px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                height: 100%;
+                border: 2px solid transparent;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .action-box:focus {
+                outline: 3px solid var(--primary-color);
+                outline-offset: 2px;
+            }
+            
+            .action-box::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--primary-gradient);
+                transform: scaleX(0);
+                transition: transform 0.3s ease;
+                transform-origin: left;
+            }
+            
+            .action-box:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+                text-decoration: none;
+                color: inherit;
+                border-color: rgba(102, 126, 234, 0.2);
+            }
+            
+            .action-box:hover::before {
+                transform: scaleX(1);
+            }
+            
+            .action-box h4 {
+                color: #2d3748;
+                margin-bottom: 20px;
+                font-size: 1.75rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                letter-spacing: -0.01em;
+            }
+            
+            .action-box h4 i {
+                font-size: 2.5rem;
+                background: var(--primary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            
+            .action-box p {
+                color: #718096;
+                margin: 0;
+                font-size: 1.0625rem;
+                line-height: 1.6;
+                font-weight: 400;
+            }
+            
+            /* Accessibility improvements */
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0,0,0,0);
+                white-space: nowrap;
+                border: 0;
+            }
+            
+            .skip-to-content {
+                position: absolute;
+                top: -40px;
+                left: 0;
+                background: var(--primary-color);
+                color: white;
+                padding: 8px;
+                text-decoration: none;
+                border-radius: 0 0 8px 0;
+            }
+            
+            .skip-to-content:focus {
+                top: 0;
+            }
+            
+            /* Login Section */
+            .login-prompt {
+                background: white;
+                border-radius: 24px;
+                padding: 80px 60px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+                max-width: 700px;
+                margin: 0 auto;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .login-prompt::before {
+                content: '';
+                position: absolute;
+                top: -100px;
+                right: -100px;
+                width: 200px;
+                height: 200px;
+                background: var(--primary-gradient);
+                border-radius: 50%;
+                opacity: 0.05;
+            }
+            
+            .login-prompt i.main-icon {
+                font-size: 5rem;
+                background: var(--primary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin-bottom: 30px;
+                display: inline-block;
+                animation: float 3s ease-in-out infinite;
+            }
+            
+            @keyframes float {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            
+            .login-prompt h3 {
+                font-size: 2.25rem;
+                font-weight: 700;
+                color: #2d3748;
+                margin-bottom: 15px;
+                letter-spacing: -0.02em;
+            }
+            
+            .login-prompt .lead {
+                font-size: 1.25rem;
+                color: #718096;
+                margin-bottom: 35px;
+                font-weight: 400;
+            }
+            
+            .btn-lg {
+                padding: 16px 40px;
+                font-size: 1.125rem;
+                font-weight: 600;
+                border-radius: 12px;
+                letter-spacing: -0.01em;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
+                transition: all 0.3s ease;
+            }
+            
+            .btn-lg:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+            }
+            
+            /* Role-specific styling */
+            .admin-actions .action-box h4 i { color: #e53e3e; }
+            .doctor-actions .action-box h4 i { color: #38a169; }
+            .secretary-actions .action-box h4 i { color: #3182ce; }
+            
+            /* Mobile Responsive */
+            @media (max-width: 768px) {
+                .hero-title {
+                    font-size: 2rem;
+                    margin-bottom: 15px;
+                }
+                
+                .hero-title i {
+                    font-size: 2rem;
+                    display: block;
+                    margin: 0 auto 15px;
+                }
+                
+                .hero-subtitle {
+                    font-size: 1.125rem;
+                }
+                
+                .action-box {
+                    padding: 30px 25px;
+                    margin-bottom: 20px;
+                }
+                
+                .action-box h4 {
+                    font-size: 1.5rem;
+                    flex-direction: column;
+                    text-align: center;
+                }
+                
+                .action-box h4 i {
+                    font-size: 3rem;
+                    margin-bottom: 10px;
+                }
+                
+                .action-box p {
+                    font-size: 1rem;
+                    text-align: center;
+                }
+                
+                .login-prompt {
+                    padding: 40px 20px;
+                    margin: 0 10px;
+                }
+                
+                .login-prompt h3 {
+                    font-size: 1.75rem;
+                }
+                
+                .login-prompt .lead {
+                    font-size: 1.125rem;
+                }
+                
+                .row {
+                    margin-left: 0;
+                    margin-right: 0;
+                }
+                
+                .col-md-5, .col-md-4, .col-lg-3 {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+            }
+            
+            @media (max-width: 576px) {
+                .hero-title {
+                    font-size: 1.75rem;
+                }
+                
+                .action-box {
+                    padding: 25px 20px;
+                }
+                
+                .btn-lg {
+                    font-size: 1rem;
+                    padding: 12px 24px;
+                }
+            }
+        </style>
     </head>
     <body>
         <div layout:fragment="content">
-            <h1 class="mb-4">[[#{home.index.headline}]]</h1>
-            <p class="mb-5">[(#{home.index.text})]</p>
-            <div class="col-md-4 mb-5">
-                <h4 class="mb-3">[[#{home.index.exploreEntities}]]</h4>
-                <div class="list-group">
-                    <a th:href="@{/hospusers}" class="list-group-item list-group-item-action">[[#{hospuser.list.headline}]]</a>
-                    <a th:href="@{/patientvisits}" class="list-group-item list-group-item-action">[[#{patientvisit.list.headline}]]</a>
-                    <a th:href="@{/roles}" class="list-group-item list-group-item-action">[[#{role.list.headline}]]</a>
+            <a href="#main-content" class="skip-to-content">Skip to main content</a>
+            
+            <div class="hero-section" id="main-content" role="banner">
+                <h1 class="hero-title">
+                    <i class="fas fa-hospital" aria-hidden="true"></i>
+                    Welcome <span sec:authentication="principal.username">User</span> to our Hospital!
+                </h1>
+                <p class="hero-subtitle" sec:authorize="isAuthenticated()">Choose an action below to get started</p>
+                <p class="hero-subtitle" sec:authorize="!isAuthenticated()">Please login to access the system</p>
+            </div>
+            
+            <!-- Patient Actions -->
+            <div class="row justify-content-center" sec:authorize="hasRole('PATIENT')" role="navigation" aria-label="Patient Actions">
+                <div class="col-md-5 mb-4">
+                    <a href="/patient/my-records" class="action-box" aria-label="View Medical Records">
+                        <h4><i class="fas fa-file-medical" aria-hidden="true"></i> My Medical Records</h4>
+                        <p>View your complete medical history, diagnoses, and treatment records in one secure location</p>
+                        <span class="sr-only">Click to access your medical records</span>
+                    </a>
+                </div>
+                <div class="col-md-5 mb-4">
+                    <a href="/profile" class="action-box" aria-label="View and Edit Profile">
+                        <h4><i class="fas fa-user-circle" aria-hidden="true"></i> My Profile</h4>
+                        <p>Update your personal information, contact details, and manage your account settings</p>
+                        <span class="sr-only">Click to access your profile</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Admin Actions -->
+            <div class="row admin-actions" sec:authorize="hasRole('ADMIN')">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <a href="/hospusers" class="action-box">
+                        <h4><i class="fas fa-users-cog"></i> Manage Users</h4>
+                        <p>Full access to user management and system administration</p>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <a href="/patientvisits" class="action-box">
+                        <h4><i class="fas fa-clipboard-list"></i> All Visits</h4>
+                        <p>View and manage all patient visits across the system</p>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <a href="/roles" class="action-box">
+                        <h4><i class="fas fa-user-shield"></i> Roles</h4>
+                        <p>Configure system roles and manage permissions</p>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <a href="/admin/audit-logs" class="action-box">
+                        <h4><i class="fas fa-file-shield"></i> Audit Logs</h4>
+                        <p>Monitor system activity and security events</p>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Doctor Actions -->
+            <div class="row doctor-actions" sec:authorize="hasRole('DOCTOR')">
+                <div class="col-md-6 mb-4">
+                    <a href="/patientvisits/add" class="action-box">
+                        <h4><i class="fas fa-stethoscope"></i> New Visit</h4>
+                        <p>Record patient diagnoses with military-grade AES-256 encryption</p>
+                    </a>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <a href="/patientvisits" class="action-box">
+                        <h4><i class="fas fa-users"></i> View Patients</h4>
+                        <p>Access complete patient medical records and visit history</p>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Secretary Actions -->
+            <div class="row secretary-actions" sec:authorize="hasRole('SECRETARIAT')">
+                <div class="col-md-12 mb-4">
+                    <a href="/hospusers" class="action-box">
+                        <h4><i class="fas fa-user-plus"></i> User Management</h4>
+                        <p>Create, edit and view patients and doctors accounts</p>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Login prompt for non-authenticated users -->
+            <div sec:authorize="!isAuthenticated()">
+                <div class="login-prompt">
+                    <i class="fas fa-hospital-alt main-icon"></i>
+                    <h3>Secure Hospital Management System</h3>
+                    <p class="lead">Advanced security features protecting your medical data</p>
+                    <a href="/auth/login" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Login to Continue
+                    </a>
+                    <p class="mt-4">
+                        <small class="text-muted">New patient? <a href="/auth/register" style="color: var(--primary-color); font-weight: 600;">Register here</a></small>
+                    </p>
                 </div>
             </div>
         </div>

@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Account Locked - Hospital Management</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .locked-container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+            text-align: center;
+        }
+        .lock-icon {
+            font-size: 64px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="locked-container">
+        <div class="lock-icon">
+            <i class="fas fa-user-lock"></i>
+        </div>
+        
+        <h2 class="mb-3">Account Locked</h2>
+        
+        <div class="alert alert-danger">
+            Your account has been locked due to multiple failed login attempts.
+        </div>
+        
+        <div class="info-box">
+            <h5>Why was my account locked?</h5>
+            <ul class="mb-0">
+                <li>3 or more failed login attempts</li>
+                <li>Security measure to prevent unauthorized access</li>
+                <li>Automatic unlock after 15 minutes</li>
+            </ul>
+        </div>
+        
+        <div class="mt-4">
+            <h5>Unlock Options:</h5>
+            
+            <!-- Option 1: Wait -->
+            <div class="mb-3">
+                <i class="fas fa-clock"></i> Wait 15 minutes for automatic unlock
+            </div>
+            
+            <!-- Option 2: Email Unlock -->
+            <div class="mb-3">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#unlockModal">
+                    <i class="fas fa-envelope"></i> Request Unlock via Email
+                </button>
+            </div>
+            
+            <!-- Option 3: Contact Admin -->
+            <div class="mb-3">
+                <i class="fas fa-phone"></i> Contact administrator: admin@hospital.com
+            </div>
+        </div>
+        
+        <hr>
+        
+        <a href="/auth/login" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Login
+        </a>
+    </div>
+    
+    <!-- Unlock Request Modal -->
+    <div class="modal fade" id="unlockModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Account Unlock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/auth/request-unlock}" method="post">
+                    <div class="modal-body">
+                        <p>Enter your email address to receive an unlock link:</p>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                For demo purposes, the unlock link will be displayed on screen
+                                instead of sending an actual email.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Send Unlock Link</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

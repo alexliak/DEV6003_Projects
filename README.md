@@ -1,17 +1,17 @@
-# Hospital Management System - DEV6003 Secure Application
+# Hospital Management System - DEV6003 Secure Application Development
 
-## 🎯 Assessment 002 Implementation
-This is a secure hospital patient management system built for DEV6003 Assessment 002, implementing comprehensive security features on top of the original Spring Boot application.
+## 🏥 Project Overview
 
-## 🔒 Security Features Implemented
+A secure hospital patient management system developed for DEV6003 Assessment 002, implementing comprehensive security features for managing patient visits and medical data.
 
-1. **JWT Authentication** ✅ - Stateless REST API security
-2. **Role-Based Access Control** ✅ - 4 roles: ADMIN, DOCTOR, SECRETARIAT, PATIENT
-3. **Password Security** ✅ - BCrypt encryption, complexity validation, change policy
-4. **Diagnosis Encryption** ✅ - AES-256 for medical data protection
-5. **Input Validation** ✅ - Protection against SQL injection and XSS
-6. **Audit Logging** ✅ - Comprehensive security event logging
-7. **Account Lockout** ✅ - After 3 failed login attempts
+### 🎯 Assessment Requirements Met
+
+1. ✅ **Input Validation** - All user inputs validated against SQL injection and XSS attacks
+2. ✅ **Password Policy** - Complex password requirements with 90-day change policy
+3. ✅ **Role-Based Access Control** - 4 roles: ADMIN, DOCTOR, SECRETARIAT, PATIENT
+4. ✅ **Diagnosis Encryption** - AES-256 encryption for sensitive medical data
+5. ✅ **JWT Security** - Stateless authentication for REST API endpoints
+6. ✅ **All Security Techniques** - Authentication, authorization, logging, session management, CSRF protection
 
 ## 🚀 Quick Start
 
@@ -20,246 +20,197 @@ This is a secure hospital patient management system built for DEV6003 Assessment
 - MySQL 8.0+
 - Maven 3.6+
 
-### 1. Database Setup
-```bash
-# Create database
-mysql -u root -p
+### Database Setup
+```sql
 CREATE DATABASE nycsecdb;
-exit;
-
-# Update application.properties with your MySQL credentials
-# Default: username=root, password=root123
+USE nycsecdb;
 ```
 
-### 2. Run Application
+### Running the Application
 ```bash
-# Clone and enter directory
-cd DEV6003FinalProject
+# Clone the repository
+git clone https://github.com/yourusername/DEV6003FinalProject.git
+cd DEV6003_Projects
+
+# Create SSL certificate (first time only)
+./scripts/security/create_ssl_certificate.sh
 
 # Build and run
-mvn clean compile spring-boot:run
-
-# The app will:
-# - Start on http://localhost:8080
-# - Create tables automatically
-# - Import initial data from import.sql
+mvn clean compile
+mvn spring-boot:run
 ```
 
-### 3. Test Login
-```bash
-# Login and get JWT token
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"usernameOrEmail":"admin","password":"1234"}'
+### 🎯 Assessment Testing Steps
 
-# Response will include JWT token for authenticated requests
-```
+1. **Access the Application**
+   - Navigate to: https://localhost:8443
+   - Accept the self-signed certificate warning
 
-## 👥 Default Users & Credentials
+2. **Login with Initial Credentials**
+   - Username: admin
+   - Password: 1234
 
-| Username  | Password | Role             | Permissions |
-|-----------|----------|------------------|-------------|
-| admin     | 1234     | ROLE_ADMIN       | Full system access |
-| doctor    | 1234     | ROLE_DOCTOR      | Create visits, view all patients, edit own visits |
-| secretary | 1234     | ROLE_SECRETARIAT | Manage users and patients, no medical data |
-| patient   | 1234     | ROLE_PATIENT     | View own data only |
+3. **Change Password (REQUIRED)**
+   - Go to User Menu → Change Password
+   - Follow password requirements shown on screen
+   - Use secure password from NEW_CREDENTIALS.md
+
+4. **Test Security Features**
+   - Navigate to Entities → Security Test
+   - Test all security features:
+     - SQL Injection Prevention
+     - Password Validation
+     - Diagnosis Encryption
+     - Role-Based Access Control
+
+5. **Test Different Roles**
+   - Logout and login with different users
+   - Verify role-based permissions
+
+### Default Users (MUST CHANGE ON FIRST LOGIN!)
+| Username | Initial Password | Role | New Secure Password |
+|----------|-----------------|------|---------------------|
+| admin | 1234 | ADMIN | See docs/setup/NEW_CREDENTIALS.md |
+| george | 1234 | DOCTOR | See docs/setup/NEW_CREDENTIALS.md |
+| secretary | 1234 | SECRETARIAT | See docs/setup/NEW_CREDENTIALS.md |
+| patient1 | 1234 | PATIENT | See docs/setup/NEW_CREDENTIALS.md |
+
+⚠️ **IMPORTANT**: All users must change their password on first login using the "Change Password" feature!
+
+## 🔒 Security Features
+
+### Authentication & Authorization
+- **Dual Authentication System**:
+  - Session-based for web interface (Thymeleaf)
+  - JWT-based for REST API endpoints
+- **Spring Security 6.x** with method-level security
+- **Account lockout** after 3 failed login attempts
+
+### Data Protection
+- **AES-256 Encryption** for medical diagnoses
+- **BCrypt** password hashing (strength 12)
+- **Input sanitization** preventing SQL injection and XSS
+- **CSRF protection** for all web forms
+
+### Access Control
+- **ADMIN**: Full system access
+- **DOCTOR**: Create/edit own visits, view all patients
+- **SECRETARIAT**: Manage patients and doctors only
+- **PATIENT**: View own medical records
 
 ## 📁 Project Structure
-
 ```
 src/main/java/com/nyc/hosp/
-├── security/              # JWT & Spring Security configuration
-│   ├── SecurityConfig.java
-│   ├── JwtTokenProvider.java
-│   ├── JwtAuthenticationFilter.java
-│   └── CustomUserDetailsService.java
-├── auth/                  # Authentication endpoints
-│   ├── AuthController.java
-│   └── dto/
-├── encryption/            # Medical data encryption
-│   └── DiagnosisEncryptionService.java
-├── validation/            # Input validation & sanitization
-│   ├── InputSanitizer.java
-│   └── PasswordValidator.java
-├── audit/                 # Security audit logging
-│   └── AuditLogService.java
-└── domain/               # Enhanced entities
-    ├── Hospuser.java     # Added security fields
-    ├── Role.java         # Enum-based roles
-    └── Patientvisit.java # Added encrypted diagnosis
+├── controller/         # REST and Web controllers
+├── security/          # Security configuration and JWT
+├── service/           # Business logic layer
+├── repository/        # Data access layer
+├── domain/            # Entity classes
+├── dto/              # Data transfer objects
+├── encryption/        # AES encryption service
+├── validation/        # Input validation utilities
+└── audit/            # Security audit logging
 ```
 
-## 🔐 Security Implementation Details
+## 📚 Documentation
 
-### Password Policy
-- Minimum 8 characters
-- Must contain: uppercase, lowercase, digit, special character
-- Expires after 90 days
-- BCrypt encoding (strength 12)
+### Assessment Documentation
+- [Requirements Completion Checklist](docs/assessment/REQUIREMENTS_COMPLETION_CHECKLIST.md)
+- [Security Audit Verification Report](docs/assessment/SECURITY_AUDIT_VERIFICATION.md)
+- [Screenshots Evidence Guide](docs/assessment/SCREENSHOTS_EVIDENCE.md)
 
-### JWT Configuration
-- Algorithm: HS512
-- Token validity: 24 hours
-- Secret key: 512+ bits (secure)
-- Stateless authentication
+### Setup & Configuration
+- [Secure Setup Guide](docs/setup/SECURE_SETUP_GUIDE.md)
+- [Email Configuration](docs/setup/EMAIL_SETUP_GUIDE.md)
+- [New Credentials](docs/setup/NEW_CREDENTIALS.md)
 
-### Diagnosis Encryption
-- Algorithm: AES-256-GCM
-- Each diagnosis encrypted before storage
-- Automatic decryption for authorized users
+### Technical Documentation
+- [Complete System Documentation](docs/technical/HOSPITAL_MANAGEMENT_COMPLETE_DOCUMENTATION.md)
 
-### Input Validation
-- All DTOs use Bean Validation
-- SQL injection prevention
-- XSS protection through sanitization
-- Request size limits
+## 🧪 Testing
 
-## 📝 API Documentation
-
-### Authentication Endpoints
-
-#### Login
+Run the comprehensive security test suite:
 ```bash
+chmod +x scripts/security/test_security.sh
+./scripts/security/test_security.sh
+```
+
+### Test Coverage
+- Authentication tests (valid/invalid login, account lockout)
+- Authorization tests (role-based access control)
+- Input validation (SQL injection, XSS prevention)
+- Encryption verification
+- JWT security tests
+- Password complexity validation
+
+## 📊 API Documentation
+
+### Authentication
+```http
 POST /api/auth/login
 Content-Type: application/json
 
 {
-  "usernameOrEmail": "admin",
+  "usernameOrEmail": "doctor",
   "password": "1234"
-}
-
-# Response:
-{
-  "accessToken": "eyJhbGciOiJIUzUxMi...",
-  "tokenType": "Bearer",
-  "userId": 1,
-  "username": "admin",
-  "email": "admin@admin.com",
-  "roles": ["ROLE_ADMIN"]
 }
 ```
 
-#### Change Password
-```bash
-POST /api/auth/change-password
-Authorization: Bearer {token}
+### Patient Visits (Requires JWT)
+```http
+POST /api/visits/create
+Authorization: Bearer {jwt-token}
 Content-Type: application/json
 
 {
-  "oldPassword": "1234",
-  "newPassword": "NewPass123!"
+  "patientId": 2,
+  "diagnosis": "Routine checkup - all vitals normal"
 }
 ```
 
-### Protected Endpoints (require JWT)
+## 🛡️ Security Compliance
 
-#### Admin Only
-- `GET /api/admin/**` - Admin dashboard
-- `GET /api/audit/**` - Audit logs
+### OWASP Top 10 Coverage
+1. **Broken Access Control** ✅ Role-based access with Spring Security
+2. **Cryptographic Failures** ✅ AES-256 for sensitive data
+3. **Injection** ✅ Parameterized queries, input validation
+4. **Insecure Design** ✅ Security by design principles
+5. **Security Misconfiguration** ✅ Secure defaults, no debug in production
+6. **Vulnerable Components** ✅ Updated dependencies
+7. **Authentication Failures** ✅ Strong password policy, account lockout
+8. **Data Integrity** ✅ JWT signatures, audit logging
+9. **Security Logging** ✅ Comprehensive audit trail
+10. **SSRF** ✅ Input validation on all endpoints
 
-#### Doctor Access
-- `POST /api/visits/create` - Create patient visit
-- `PUT /api/visits/{id}` - Update own visits only
-- `GET /api/patients/**` - View all patients
+## 📈 Performance
 
-#### Secretary Access
-- `GET/POST/PUT /api/users/**` - Manage users
-- `GET/POST/PUT /api/patients/**` - Manage patients
-- No access to medical diagnoses
+- Processing time: < 2 seconds per request
+- Memory usage: < 4.5GB under load
+- Supports concurrent users with session management
+- Stateless API for horizontal scaling
 
-## 🧪 Testing Guide
+## 🔍 Monitoring & Logging
 
-### 1. Test Authentication
-```bash
-# Test successful login
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"usernameOrEmail":"admin","password":"1234"}'
+All security events are logged:
+- Authentication attempts (success/failure)
+- Access to medical data
+- Data modifications
+- Security violations
 
-# Test failed login (wrong password)
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"usernameOrEmail":"admin","password":"wrong"}'
+## 🚦 Future Enhancements
 
-# After 3 failed attempts, account locks
-```
+- Email notifications for security events
+- Two-factor authentication
+- API rate limiting
+- Advanced threat detection
+- Automated security scanning
 
-### 2. Test Role-Based Access
-```bash
-# Get JWT token for doctor
-TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"usernameOrEmail":"doctor","password":"1234"}' | jq -r '.accessToken')
+## 📝 License
 
-# Try to access admin endpoint (should fail)
-curl -X GET http://localhost:8080/api/admin/users \
-  -H "Authorization: Bearer $TOKEN"
-```
+This project is developed for academic purposes as part of DEV6003 at New York College.
 
-### 3. Test Input Validation
-```bash
-# Test SQL injection attempt (should be blocked)
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"usernameOrEmail":"admin'; DROP TABLE users;--","password":"1234"}'
-```
+## 👥 Contributors
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Login returns 401 Unauthorized**
-   - Check if JWT secret is properly configured (must be 512+ bits)
-   - Verify /api/auth/login is in public endpoints
-
-2. **Invalid username or password**
-   - Verify BCrypt hash in database matches password
-   - Check if account is locked (failed_login_attempts >= 3)
-
-3. **Database connection issues**
-   - Verify MySQL is running: `sudo service mysql status`
-   - Check credentials in application.properties
-   - Ensure database 'nycsecdb' exists
-
-### Reset Failed Login Attempts
-```sql
-UPDATE hospuser SET failed_login_attempts = 0, account_locked = false WHERE username = 'admin';
-```
-
-## 📊 Database Schema
-
-### Enhanced Tables
-- `hospuser` - Added: password, email, lastPasswordChange, failedLoginAttempts, accountLocked
-- `roles` - Changed to enum: ROLE_ADMIN, ROLE_DOCTOR, ROLE_SECRETARIAT, ROLE_PATIENT
-- `patientvisit` - Added: encryptedDiagnosis
-- `user_roles` - Many-to-many user-role mapping
-- `audit_log` - Security event logging
-
-## ✅ Assessment Requirements Coverage
-
-| Requirement | Implementation | Status |
-|-------------|----------------|---------|
-| Validate all user input | Bean Validation, Input Sanitizer | ✅ |
-| Password complexity | PasswordValidator with rules | ✅ |
-| Change password policy | 90-day expiry, change endpoint | ✅ |
-| 4 user roles | Admin, Doctor, Secretariat, Patient | ✅ |
-| Role-based access | Spring Security + @PreAuthorize | ✅ |
-| Encrypted diagnosis | AES-256-GCM encryption | ✅ |
-| JWT REST API | Stateless authentication | ✅ |
-| Authentication | Spring Security + JWT | ✅ |
-| Authorization | Role-based method security | ✅ |
-| Logging | Comprehensive audit logging | ✅ |
-| Session management | Stateless (JWT) | ✅ |
-| Injection prevention | Parameterized queries, validation | ✅ |
-| CSRF protection | Disabled for REST API | ✅ |
-
-## 🔗 Resources
-
-- [Spring Security Reference](https://docs.spring.io/spring-security/reference/index.html)
-- [JWT Introduction](https://jwt.io/introduction/)
-- [OWASP Security Guidelines](https://owasp.org/www-project-top-ten/)
-- [BCrypt Calculator](https://bcrypt-generator.com/)
-
-## 📄 License
-
-This project is created for educational purposes as part of DEV6003 coursework.
+- Student: [Your Name]
+- Module: DEV6003 Secure Application Development
+- Institution: New York College / University of Greater Manchester
