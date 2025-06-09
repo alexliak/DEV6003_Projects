@@ -40,33 +40,41 @@ mvn clean compile
 mvn spring-boot:run
 ```
 
-### 🎯 Assessment Testing Steps
+### 🔐 Security-First Setup
 
 1. **Access the Application**
    - Navigate to: https://localhost:8443
    - Accept the self-signed certificate warning
 
-2. **Login with Initial Credentials**
-   - Username: admin
-   - Password: 1234
+2. **Initial Login**
+   - Initial credentials are provided separately by the administrator
+   - For assessment purposes, see the secure credentials document
+   - **NEVER commit passwords to version control**
 
-3. **Change Password (REQUIRED)**
-   - Go to User Menu → Change Password
-   - Follow password requirements shown on screen
-     - Use secure password from NEW_CREDENTIALS.md
-4. **Test Different Roles**
-   - Logout and login with different users
-   - Verify role-based permissions
+3. **Mandatory Password Change**
+   - All users MUST change their password on first login
+   - System enforces password complexity requirements:
+     - Minimum 8 characters
+     - At least one uppercase letter
+     - At least one lowercase letter
+     - At least one digit
+     - At least one special character (!@#$%^&*())
+   - Cannot reuse last 5 passwords
+   - Password expires every 90 days
 
-### Default Users (MUST CHANGE ON FIRST LOGIN!)
-| Username | Initial Password | Role | New Secure Password |
-|----------|-----------------|------|---------------------|
-| admin | 1234 | ADMIN | See docs/setup/NEW_CREDENTIALS.md |
-| george | 1234 | DOCTOR | See docs/setup/NEW_CREDENTIALS.md |
-| secretary | 1234 | SECRETARIAT | See docs/setup/NEW_CREDENTIALS.md |
-| patient1 | 1234 | PATIENT | See docs/setup/NEW_CREDENTIALS.md |
+### System Users
+| Username | Role | Access Level |
+|----------|------|-------------|
+| admin | ADMIN | Full system access |
+| doctor1, doctor2 | DOCTOR | Create visits, view all patients, edit own visits |
+| secretary | SECRETARIAT | User management only (no medical data access) |
+| patient1 | PATIENT | View own medical records only |
 
-⚠️ **IMPORTANT**: All users must change their password on first login using the "Change Password" feature!
+⚠️ **SECURITY NOTICE**: 
+- Account locks after 3 failed login attempts
+- Lockout duration: 15 minutes
+- All authentication events are logged
+- Suspicious activities trigger security alerts
 
 ## 🔒 Security Features
 
@@ -126,8 +134,8 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "usernameOrEmail": "doctor",
-  "password": "1234"
+  "usernameOrEmail": "doctor1",
+  "password": "<secure-password>"
 }
 ```
 
