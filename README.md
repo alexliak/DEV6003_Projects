@@ -211,6 +211,6 @@ This project is developed for academic purposes as part of DEV6003 at New York C
 
 ## 👥 Contributors
 
-- Student: [Your Name]
+- Student: Alexandros Liakopoulos
 - Module: DEV6003 Secure Application Development
 - Institution: New York College / University of Greater Manchester
