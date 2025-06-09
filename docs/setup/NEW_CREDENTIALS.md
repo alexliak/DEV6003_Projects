@@ -3,11 +3,11 @@
 ## Important: Change Password on First Login!
 
 These are the NEW secure passwords that meet all complexity requirements:
-
+ for the  patient role  use first Jdoe. 
 | Username  | Old Password | NEW Password  | Role        | Email                  |
 |-----------|--------------|---------------|-------------|------------------------|
 | admin     | 1234         | Admin@2025!   | ADMIN       | admin@hospital.nyc     |
-| doctor2   | -            | Doctor123!    | DOCTOR      | doctor2@hospital.com	  |
+| doctor2   | -            | Doctor123!    | DOCTOR      | doctor2@hospital.com	<br/>  |
 | user1     | -            | User123!      | PATIENT     | user1@mail.com        |
 | secretary | 1234         | Secretary123! | SECRETARIAT | secr@doc.com |
 | Jdoe      | -            | Jdoe123!      | PATIENT     | patient1@hospital.nyc  |

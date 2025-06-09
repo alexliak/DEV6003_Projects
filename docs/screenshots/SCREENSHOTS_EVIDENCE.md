@@ -152,22 +152,6 @@ This document outlines all screenshots needed to demonstrate the security featur
 ### 9.5 OWASP A09 - Security Logging
 - **Evidence**: Comprehensive audit logs
 
----
-
-## Screenshot Naming Convention
-
-Use this format for consistency:
-```
-{number}_{category}_{description}.png
-
-Examples:
-01_auth_login_page.png
-02_auth_failed_attempts.png
-03_validation_sql_injection.png
-04_audit_logs_dashboard.png
-```
-
----
 
 ## Required Screenshots Checklist
 
@@ -189,7 +173,6 @@ Examples:
 - [ ] Access denied for secretary
 - [ ] Doctor can't edit other's visit
 
-Total: ~18-20 screenshots for comprehensive evidence
 
 ---
 

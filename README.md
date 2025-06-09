@@ -19,6 +19,7 @@ A secure hospital patient management system developed for DEV6003 Assessment 002
 - Java 17+
 - MySQL 8.0+
 - Maven 3.6+
+- Email service configured (Required for password reset & notifications)
 
 ### Database Setup
 ```sql
@@ -32,12 +33,16 @@ USE nycsecdb;
 git clone https://github.com/yourusername/DEV6003FinalProject.git
 cd DEV6003_Projects
 
+# IMPORTANT: Configure email service first!
+# See: docs/setup/EMAIL_SETUP_GUIDE.md
+# This is REQUIRED for password reset and notifications
+
 # Create SSL certificate (first time only)
 ./scripts/security/create_ssl_certificate.sh
 
-# Build and run
+# Build and run with email support
 mvn clean compile
-mvn spring-boot:run
+./run-with-email.sh  # Uses the email configuration from .env
 ```
 
 ### 🔐 Security-First Setup
@@ -48,7 +53,8 @@ mvn spring-boot:run
 
 2. **Initial Login**
    - Initial credentials are provided separately by the administrator
-   - For assessment purposes, see the secure credentials document
+   - **For assessment purposes**: See `docs/setup/NEW_CREDENTIALS.md`
+   - **Email must be configured**: See `docs/setup/EMAIL_SETUP_GUIDE.md`
    - **NEVER commit passwords to version control**
 
 3. **Mandatory Password Change**
@@ -116,12 +122,12 @@ src/main/java/com/nyc/hosp/
 ### Assessment Documentation
 - [Requirements Completion Checklist](docs/assessment/REQUIREMENTS_COMPLETION_CHECKLIST.md)
 - [Security Audit Verification Report](docs/assessment/SECURITY_AUDIT_VERIFICATION.md)
-- [Screenshots Evidence Guide](docs/assessment/SCREENSHOTS_EVIDENCE.md)
+- [Screenshots Evidence Guide](docs/screenshots/SCREENSHOTS_EVIDENCE.md)
 
 ### Setup & Configuration
+- [Email Configuration](docs/setup/EMAIL_SETUP_GUIDE.md) **← START HERE! (Required)**
+- [New Credentials](docs/setup/NEW_CREDENTIALS.md) **← Initial passwords for testing**
 - [Secure Setup Guide](docs/setup/SECURE_SETUP_GUIDE.md)
-- [Email Configuration](docs/setup/EMAIL_SETUP_GUIDE.md)
-- [New Credentials](docs/setup/NEW_CREDENTIALS.md)
 
 ### Technical Documentation
 - [Complete System Documentation](docs/technical/HOSPITAL_MANAGEMENT_COMPLETE_DOCUMENTATION.md)

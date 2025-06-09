@@ -21,8 +21,8 @@ Mailtrap is a safe email testing service that captures all emails sent from your
 4. You'll see credentials like:
    - **Host**: sandbox.smtp.mailtrap.io
    - **Port**: 2525
-   - **Username**: Something like `c3a0d5fd0a20e2`
-   - **Password**: Something like `a1b2c3d4e5f6g7`
+   - **Username**: Something like `a3a0d5fd0f20e2`
+   - **Password**: Something like `z1b22d42e5f6g7`
 
 ## Step 3: Configure the Application
 
